@@ -154,7 +154,7 @@ range=` expr ${#ROI[@]}`
 nTracts=` expr ${range} / 2`
 for (( i=0; i<=$nTracts; i+=2 ));
 	do
-		for i_track in 01 02 03 04 05 06 07 08 09 10
+		for i_track in 01 #02 03 04 05 06 07 08 09 10
 			do
 				echo ${i_track}
 				for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 ))
