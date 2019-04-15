@@ -77,14 +77,23 @@ if [ ! -f $WMMK ]; then
 fi
 
 mkdir -p roi
+re='^[0-9]+$'
 for ROI in ${roipair[*]}
-	do
-		cp $rois/ROI${ROI}.nii.gz ./
-		# add line to remove .nii.gz from name
-        if [ ! -f roi_${ROI}.mif ]; then
-		    mrconvert ROI${ROI}.nii.gz roi_${ROI}.mif
+    do
+        if ! [[ $ROI =~ $re ]]; then
+            cp $rois/$ROI.nii.gz ./
+            if [ ! -f $roi_${ROI}.mif ]; then
+                mrconvert $ROI.nii.gz roi_${ROI}.mif
+            fi
+            mv ${ROI}.nii.gz ./roi/
+        else
+            cp $rois/ROI${ROI}.nii.gz ./
+            # add line to remove .nii.gz from name
+            if [ ! -f roi_${ROI}.mif ]; then
+                mrconvert ROI${ROI}.nii.gz roi_${ROI}.mif
+            fi
+            mv ROI${ROI}.nii.gz ./roi/
         fi
-        mv ROI${ROI}.nii.gz ./roi/
 	done
 	ret=$?	
 	if [ ! $ret -eq 0 ]; then
@@ -150,11 +159,11 @@ for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
 	if [ -f response${i_lmax}.txt ]; then
     		echo "response${i_lmax}.txt already exist... skipping"
 	else
-    	time estimate_response -quiet dwi.mif sf.mif -grad $BGRAD -lmax $i_lmax response${i_lmax}.txt
-    	ret=$?
-    	if [ ! $ret -eq 0 ]; then
-        exit $ret
-    	fi
+    		time estimate_response -quiet dwi.mif sf.mif -grad $BGRAD -lmax $i_lmax response${i_lmax}.txt
+    		ret=$?
+    		if [ ! $ret -eq 0 ]; then
+			exit $ret
+    		fi
 	fi
 done
 
@@ -225,4 +234,3 @@ rm -rf *.mif*
 rm -rf grad.b
 rm -rf *response*.txt
 rm -rf *.nii.gz
-
