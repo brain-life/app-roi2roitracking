@@ -18,5 +18,5 @@ echo "generating tracts/"
 #TODO for Dan
 
 echo "generating surfaces/"
-time singularity exec -e docker://brainlife/docker-pythonvtk ./freesurfer2vtks.py aparc+aseg.nii.gz
+time singularity exec -e docker://brainlife/pythonvtk:1.1 ./freesurfer2vtks.py aparc+aseg.nii.gz
 
