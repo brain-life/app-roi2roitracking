@@ -233,4 +233,4 @@ rm -rf ./roi/
 rm -rf *.mif*
 rm -rf grad.b
 rm -rf *response*.txt
-rm -rf *.nii.gz
+#rm -rf *.nii.gz #this removes aparc+aseg.nii.gz and other .nii.gz needed later
