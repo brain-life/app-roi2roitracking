@@ -5,10 +5,6 @@
 
 set -e
 
-#trying to workaround the issue of
-# -- Could not access the MATLAB Runtime component cache. Details: fl:filesystem:NotDirectoryError
-export SINGULARITYENV_MCR_CACHE_ROOT=`pwd`
-
 if [ ! -f wm_anat.nii.gz ]; then
     [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
     echo $FREESURFER_LICENSE > license.txt
