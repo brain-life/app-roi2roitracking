@@ -5,13 +5,20 @@
 
 #set -e
 
+if [ ! -f csf.mif ]; then
+	echo "csf mask generation"
+	time singularity exec -e docker://brainlife/mrtrix3:3.0_RC3 ./csf.sh
+fi
+
 if [ ! -f wm_anat.nii.gz ]; then
     [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
     echo $FREESURFER_LICENSE > license.txt
+    echo "converting appropriate parcellations"
     time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.2 ./convert.sh
 fi
 
 if [ ! -f varea.nii.gz ]; then
+	echo "creating hemispheric rois"
 	time singularity exec -e docker://brainlife/fsl:latest ./mask.sh
 fi
 
