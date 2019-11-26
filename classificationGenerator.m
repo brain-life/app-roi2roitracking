@@ -8,14 +8,14 @@ if ~isdeployed
     addpath(genpath('/N/u/brlife/git/encode'))
     addpath(genpath('/N/u/brlife/git/jsonlab'))
     addpath(genpath('/N/u/brlife/git/spm'))
-    addpath(genpath('/N/u/brlife/git/wma'))
+    addpath(genpath('/N/u/brlife/git/wma_tools'))
 
     %for old VM
     addpath(genpath('/usr/local/vistasoft'))
     addpath(genpath('/usr/local/encode'))
     addpath(genpath('/usr/local/jsonlab'))
     addpath(genpath('/usr/local/spm'))
-    addpath(genpath('/usr/local/wma'))
+    addpath(genpath('/usr/local/wma_tools'))
 end
 
 % Set top directory
@@ -24,38 +24,39 @@ topdir = pwd;
 % Load configuration file
 config = loadjson('config.json');
 
-% Set tck file path/s
-rois=dir('*.tck*');
-
-roiPair = config.roiPair;
-    
-for ii = 1:length(rois); 
-    fgPath{ii} = fullfile(topdir,rois(ii).name);
+% Set tck (fg) file path/s
+trackdir = dir(fullfile('track','*.tck*'));
+for ii = 1:length(trackdir); 
+    fgPath{ii} = fullfile(topdir,'track',trackdir(ii).name);
 end
 
-% Create classification structure
-[mergedFG, classification]=bsc_mergeFGandClass(fgPath);
+% set seed ROI number: should be 8109 or 8209 for now
+roiNum = str2num(config.seed_roi);
 
-% Amend name of tract in classification structure
-if isnumeric(roiPair(1))
-    for ii = round((1:length(roiPair))/2)
-        classification.names{ii} = strcat('ROI_',num2str(roiPair((2*ii) - 1)),'_ROI_',num2str(roiPair((2*ii))));
-    end
+%% Create whole OR fg_classified structure to feed into eccentricity
+[mergedFG, whole_classification]=bsc_mergeFGandClass(fgPath);
+
+% THINK OF BETTER HIEURISTIC FOR THIS. NOT ALL LGNS WILL HAVE THIS ROI NUM
+if roiNum == 8109
+	whole_classification.names = {'left-optic-radiation'};
 else
-    roiPair = split(roiPair);
-    for ii = round((1:length(roiPair))/2)
-        classification.names{ii} = strcat('ROI_',roiPair{(2*ii) - 1},'_ROI_',roiPair{(2*ii)});
-    end
+	whole_classification.names = {'right-optic-radiation'};
 end
 
-% Create fg_classified structure
+% whole OR tractogram
 wbFG = mergedFG;
-fg_classified = bsc_makeFGsFromClassification(classification,wbFG);
 
-% Save output
+% whole OR fg_classified
+
+whole_fg_classified = bsc_makeFGsFromClassification_v4(whole_classification,wbFG);
+
+%% perform eccentricity classification
+[fg_classified,classification] = eccentricityClassification(config,whole_fg_classified,wbFG);
+
+%% Save output
 save('output.mat','classification','fg_classified','-v7.3');
 
-% Create structure to generate colors for each tract
+%% create tracts for json structures for visualization
 tracts = fg2Array(fg_classified);
 
 mkdir('tracts');
@@ -64,15 +65,15 @@ mkdir('tracts');
 %cm = parula(length(tracts));
 cm = distinguishable_colors(length(tracts));
 for it = 1:length(tracts)
-   tract.name   = strrep(tracts(it).name, '_', ' ');
-   all_tracts(it).name = strrep(tracts(it).name, '_', ' ');
+   tract.name   = strrep(tracts{it}.name, '_', ' ');
+   all_tracts(it).name = strrep(tracts{it}.name, '_', ' ');
    all_tracts(it).color = cm(it,:);
    tract.color  = cm(it,:);
 
    %tract.coords = tracts(it).fibers;
    %pick randomly up to 1000 fibers (pick all if there are less than 1000)
-   fiber_count = min(1000, numel(tracts(it).fibers));
-   tract.coords = tracts(it).fibers(randperm(fiber_count)); 
+   fiber_count = min(1000, numel(tracts{it}.fibers));
+   tract.coords = tracts{it}.fibers(randperm(fiber_count)); 
    
    savejson('', tract, fullfile('tracts',sprintf('%i.json',it)));
    all_tracts(it).filename = sprintf('%i.json',it);
@@ -84,8 +85,8 @@ savejson('', all_tracts, fullfile('tracts/tracts.json'));
 
 % Create and write output_fibercounts.txt file
 for i = 1 : length(fg_classified)
-    name = fg_classified(i).name;
-    num_fibers = length(fg_classified(i).fibers);
+    name = fg_classified{i}.name;
+    num_fibers = length(fg_classified{i}.fibers);
     
     fibercounts(i) = num_fibers;
     tract_info{i,1} = name;
@@ -97,9 +98,5 @@ T.Properties.VariableNames = {'Tracts', 'FiberCount'};
 
 writetable(T, 'output_fibercounts.txt');
 
-
 exit;
 end
-
-
-
