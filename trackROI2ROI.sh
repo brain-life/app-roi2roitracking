@@ -222,7 +222,7 @@ for i_track in $(seq $NUM_REPETITIONS); do
     ## concatenate tracts
     holder=(*tract*.tck)
     cat_tracks ./track/track.tck ${holder[*]}
-    if [ ! $ret-eq 0 ]; then
+    if [ ! $ret -eq 0 ]; then
         exit $ret
     fi
     rm -rf ${holder[*]}

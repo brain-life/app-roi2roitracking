@@ -31,6 +31,7 @@ time singularity exec -e docker://brainlife/mcr:neurodebian1604-r2017a ./compile
 echo "generating surfaces/"
 time singularity exec -e docker://brainlife/pythonvtk:1.1 ./freesurfer2vtks.py aparc+aseg.nii.gz
 
+mkdir wmc
 mv output.mat ./wmc/classification.mat
 mv tracts ./wmc/
 mv output_fibercounts.txt ./wmc/
