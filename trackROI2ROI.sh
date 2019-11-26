@@ -219,11 +219,9 @@ for i_track in $(seq $NUM_REPETITIONS); do
         #done
     done
 
-    track_info track.tck > product.json
     ## concatenate tracts
     holder=(*tract*.tck)
     cat_tracks ./track/track.tck ${holder[*]}
-    track_info ./track/track.tck > product.json
     if [ ! $ret-eq 0 ]; then
         exit $ret
     fi
