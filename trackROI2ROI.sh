@@ -48,6 +48,7 @@ lmax8=`jq -r '.lmax8' config.json`
 lmax10=`jq -r '.lmax10' config.json`
 lmax12=`jq -r '.lmax12' config.json`
 lmax14=`jq -r '.lmax14' config.json`
+response=`jq -r '.response' config.json`
 
 mkdir csd
 mkdir track
@@ -194,6 +195,11 @@ for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
 	fi
 done
 
+if [[ ${response} == 'null' ]]; then
+	cp ./response${MAXLMAX}.txt ./csd/
+else
+	cp ${response} ./csd/
+fi
 
 ################# ROI2ROI TRACKING ############################
 for i_track in $(seq $NUM_REPETITIONS); do
