@@ -58,6 +58,7 @@ if [[ ! ${dtiinit} == "null" ]]; then
 	input_nii_gz=$dtiinit/`jq -r '.files.alignedDwRaw' $dtiinit/dt6.json`
 	BVALS=$dtiinit/`jq -r '.files.alignedDwBvals' $dtiinit/dt6.json`
 	BVECS=$dtiinit/`jq -r '.files.alignedDwBvecs' $dtiinit/dt6.json`
+	brainmask=$dtiinit/`jq -r '.files.brainMask' $dtiinit/dt6.json`
 fi
 
 #generate grad.b from bvecs/bvals
