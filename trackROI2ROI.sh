@@ -102,13 +102,13 @@ if [ ! -f ROI${roi1}.mif ]; then
 	mrconvert $rois/ROI${roi1}.nii.gz ROI${roi1}.mif
 fi
 
-if [ ! -f varea.mif ]; then
-	mrconvert varea.nii.gz varea.mif
+if [ ! -f v1.mif ]; then
+	mrconvert v1.nii.gz v1.mif
 fi
 
 #ROI1=$rois/ROI${roi1}.nii.gz
 ROI1=ROI${roi1}.mif
-ROI2=varea.mif
+ROI2=v1.mif
 
 ########### CREATE FILES FOR TRACKING ######
 ## create a t2-mask from b0
@@ -132,45 +132,47 @@ else
 	fi
 fi
 
-## fit diffusion model
-if [ -f dt.mif ]; then
-	echo "diffusion tensor already exists...skipping"
-else
-	time dwi2tensor dwi.mif -grad $BGRAD dt.mif
-	ret=$?
-	if [ ! $ret -eq 0 ]; then
-		exit $ret
+if [ ! -f $(eval "echo \$lmax${MAXLMAX}") ]; then
+	## fit diffusion model
+	if [ -f dt.mif ]; then
+		echo "diffusion tensor already exists...skipping"
+	else
+		time dwi2tensor dwi.mif -grad $BGRAD dt.mif
+		ret=$?
+		if [ ! $ret -eq 0 ]; then
+			exit $ret
+		fi
 	fi
-fi
-
-## create FA image
-if [ -f fa.mif ]; then
-	echo "FA image already exists...skipping"
-else
-	time tensor2FA dt.mif - | mrmult - mask.mif fa.mif
-	ret=$?
-	if [ ! $ret -eq 0 ]; then
-		exit $ret
+	
+	## create FA image
+	if [ -f fa.mif ]; then
+		echo "FA image already exists...skipping"
+	else
+		time tensor2FA dt.mif - | mrmult - mask.mif fa.mif
+		ret=$?
+		if [ ! $ret -eq 0 ]; then
+			exit $ret
+		fi
 	fi
-fi
-
-## create rgb eingenvectors
-if [ -f ev.mif ]; then
-	echo "RGB eigenvectors already exists...skipping"
-else
-	time tensor2vector dt.mif - | mrmult - mask.mif ev.mif
-	if [ ! $ret -eq 0 ]; then
-		exit $ret
+	
+	## create rgb eingenvectors
+	if [ -f ev.mif ]; then
+		echo "RGB eigenvectors already exists...skipping"
+	else
+		time tensor2vector dt.mif - | mrmult - mask.mif ev.mif
+		if [ ! $ret -eq 0 ]; then
+			exit $ret
+		fi
 	fi
-fi
-
-## create single fiber mask
-if [ -f sf.mif ]; then
-	echo "Single fiber mask already exists...skipping"
-else
-	time erode mask.mif -npass 3 - | mrmult fa.mif - - | threshold - -abs 0.7 sf.mif
-	if [ ! $ret -eq 0 ]; then
-		exit $ret
+	
+	## create single fiber mask
+	if [ -f sf.mif ]; then
+		echo "Single fiber mask already exists...skipping"
+	else
+		time erode mask.mif -npass 3 - | mrmult fa.mif - - | threshold - -abs 0.7 sf.mif
+		if [ ! $ret -eq 0 ]; then
+			exit $ret
+		fi
 	fi
 fi
 

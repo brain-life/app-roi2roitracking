@@ -34,5 +34,3 @@ for HEMI in $hemi
 do
         mri_label2vol --seg $fsurfer/mri/${HEMI}.ribbon.mgz --temp ${input_nii_gz} --regheader $fsurfer/mri/${HEMI}.ribbon.mgz --o ${HEMI}.ribbon.nii.gz
 done
-
-mri_label2vol --seg ${varea} --temp ${input_nii_gz} --regheader ${varea} --o varea_whole.nii.gz
