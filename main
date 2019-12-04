@@ -25,9 +25,9 @@ fi
 echo "tracking"
 time singularity exec -e docker://brainlife/mrtrix_on_mcr:1.0 ./trackROI2ROI.sh
 
-#echo "eccentricity classification"
-#time singularity exec -e docker://brainlife/mcr:neurodebian1604-r2017a ./compiled/classificationGenerator
-#
+echo "eccentricity classification"
+time singularity exec -e docker://brainlife/mcr:neurodebian1604-r2017a ./compiled/classificationGenerator
+
 #echo "generating surfaces/"
 #time singularity exec -e docker://brainlife/pythonvtk:1.1 ./freesurfer2vtks.py aparc+aseg.nii.gz
 #
