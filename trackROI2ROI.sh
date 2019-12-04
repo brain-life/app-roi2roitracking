@@ -214,13 +214,14 @@ fi
 for i_track in $(seq $NUM_REPETITIONS); do
     echo ${i_track}
     for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
-        #for curv in 0.5 1 2 3 4; do
-            out=tract_lmax${i_lmax}_${i_track}.tck
+    	echo ${i_lmax}
+        for curv in 0.5 1 2 3 4; do
+            out=tract_lmax${i_lmax}_${i_track}_${curv}.tck
             timeout 3600 streamtrack SD_PROB csd${i_lmax}.mif tmp.tck \
 		-grad $BGRAD \
                 -number $NUM \
                 -maxnum $MAXNUM \
-                -curvature 0.1 \
+                -curvature ${curv} \
                 -step $STEPSIZE \
                 -minlength $MINLENGTH \
                 -length $MAXLENGTH \
@@ -231,7 +232,7 @@ for i_track in $(seq $NUM_REPETITIONS); do
 		-cutoff ${minfodamp} \
                 -stop
             mv tmp.tck $out
-        #done
+        done
     done
 
     ## concatenate tracts
