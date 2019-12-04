@@ -62,7 +62,9 @@ if [[ ! ${dtiinit} == "null" ]]; then
 fi
 
 if [[ ${MAXNUM} == "null" ]]; then
-	MAXNUM=0
+	MAXNUM="zero"
+elif [[ ${MAXNUM} == 0 ]]; then
+	MAXNUM="zero"
 fi
 
 #generate grad.b from bvecs/bvals
