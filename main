@@ -28,18 +28,18 @@ time singularity exec -e docker://brainlife/mrtrix_on_mcr:1.0 ./trackROI2ROI.sh
 echo "eccentricity classification"
 time singularity exec -e docker://brainlife/mcr:neurodebian1604-r2017a ./compiled/classificationGenerator
 
-#echo "generating surfaces/"
-#time singularity exec -e docker://brainlife/pythonvtk:1.1 ./freesurfer2vtks.py aparc+aseg.nii.gz
-#
-#mkdir wmc
-#mv output.mat ./wmc/classification.mat
-#mv tracts ./wmc/
-#mv output_fibercounts.txt ./wmc/
+echo "generating surfaces/"
+time singularity exec -e docker://brainlife/pythonvtk:1.1 ./freesurfer2vtks.py aparc+aseg.nii.gz
 
-#if [ -f ./wmc/classification.mat ]; then
-#	rm -rf *.nii.gz*
-#	exit 0
-#else
-#	echo "tracking failed"
-#	exit 1
-#fi
+mkdir wmc
+mv output.mat ./wmc/classification.mat
+mv tracts ./wmc/
+mv output_fibercounts.txt ./wmc/
+
+if [ -f ./wmc/classification.mat ]; then
+	rm -rf *.nii.gz*
+	exit 0
+else
+	echo "tracking failed"
+	exit 1
+fi
