@@ -13,7 +13,7 @@ bvecs=`jq -r '.bvecs' config.json`
 bvals=`jq -r '.bvals' config.json`
 dtiinit=`jq -r '.dtiinit' config.json`
 fsurfer=`jq -r '.freesurfer' config.json`
-varea=`jq -r '.varea' config.json`
+eccentricity=`jq -r '.eccentricity' config.json`
 hemi="lh rh"
 
 if [[ ! ${dtiinit} == "null" ]]; then
@@ -32,5 +32,11 @@ mri_binarize --i aparc+aseg.nii.gz --o wm_anat.nii.gz \
 
 for HEMI in $hemi
 do
-        mri_label2vol --seg $fsurfer/mri/${HEMI}.ribbon.mgz --temp ${input_nii_gz} --regheader $fsurfer/mri/${HEMI}.ribbon.mgz --o ${HEMI}.ribbon.nii.gz
+        mri_vol2vol --mov $fsurfer/mri/${HEMI}.ribbon.mgz --targ ${input_nii_gz} --regheader --o ${HEMI}.ribbon.nii.gz
 done
+
+mri_vol2vol --mov ${fsurfer}/mri/ribbon.mgz --targ ${input_nii_gz} --regheader --o ribbon.nii.gz
+
+mri_vol2vol --mov ${fsurfer}/mri/aparc.a2009s+aseg.mgz --targ ${input_nii_gz} --regheader --o aparc.a2009s.aseg.nii.gz
+
+mri_vol2vol --mov ${eccentricity} --targ ${input_nii_gz} --regheader --o eccentricity.nii.gz

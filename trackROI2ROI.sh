@@ -61,6 +61,10 @@ if [[ ! ${dtiinit} == "null" ]]; then
 	brainmask=$dtiinit/`jq -r '.files.brainMask' $dtiinit/dt6.json`
 fi
 
+if [[ ${MAXNUM} == "null" ]]; then
+	MAXNUM=0
+fi
+
 #generate grad.b from bvecs/bvals
 #load bvals/bvecs
 bvals=$(cat $BVALS)
@@ -243,7 +247,7 @@ if [ -f ./track/track.tck ]; then
     rm -rf *.mif*
     rm -rf grad.b
     rm -rf *response*.txt
-    rm -rf *.nii.gz #this removes aparc+aseg.nii.gz and other .nii.gz needed later
+    #rm -rf *.nii.gz #this removes aparc+aseg.nii.gz and other .nii.gz needed later
     exit 0;
 else
     echo "tracking failed"
