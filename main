@@ -36,10 +36,10 @@ mv output.mat ./wmc/classification.mat
 mv tracts ./wmc/
 mv output_fibercounts.txt ./wmc/
 
-#if [ -f ./wmc/classification.mat ]; then
-#	rm -rf *.nii.gz*
-#	exit 0
-#else
-#	echo "tracking failed"
-#	exit 1
-#fi
+if [ -f ./wmc/classification.mat ]; then
+	rm -rf *.nii.gz*
+	exit 0
+else
+	echo "tracking failed"
+	exit 1
+fi

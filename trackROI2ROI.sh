@@ -212,7 +212,7 @@ fi
 for i_track in $(seq $NUM_REPETITIONS); do
     echo ${i_track}
     for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
-        for curv in 0.1 0.2 0.3 0.4 0.5; do
+        for curv in 0.2 0.225 0.25 0.275 0.3; do
             out=tract_lmax${i_lmax}_${i_track}_${curv}.tck
             timeout 3600 streamtrack SD_PROB csd${i_lmax}.mif tmp.tck \
 		-grad $BGRAD \
@@ -242,14 +242,14 @@ for i_track in $(seq $NUM_REPETITIONS); do
 done
 
 ################# CLEANUP #######################################
-#if [ -f ./track/track.tck ]; then
-#    rm -rf ./roi/
-#    rm -rf *.mif*
-#    rm -rf grad.b
-#    rm -rf *response*.txt
-#    #rm -rf *.nii.gz #this removes aparc+aseg.nii.gz and other .nii.gz needed later
-#    exit 0;
-#else
-#    echo "tracking failed"
-#    exit 1;
-#fi
+if [ -f ./track/track.tck ]; then
+    rm -rf ./roi/
+    rm -rf *.mif*
+    rm -rf grad.b
+    rm -rf *response*.txt
+    #rm -rf *.nii.gz #this removes aparc+aseg.nii.gz and other .nii.gz needed later
+    exit 0;
+else
+    echo "tracking failed"
+    exit 1;
+fi
