@@ -62,9 +62,7 @@ if [[ ! ${dtiinit} == "null" ]]; then
 fi
 
 if [[ ${MAXNUM} == "null" ]]; then
-	MAXNUM=zero
-elif [[ ${MAXNUM} == 0 ]]; then
-	MAXNUM=zero
+	MAXNUM=0
 fi
 
 #generate grad.b from bvecs/bvals
@@ -214,13 +212,12 @@ fi
 for i_track in $(seq $NUM_REPETITIONS); do
     echo ${i_track}
     for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
-    	echo ${i_lmax}
-        for curv in 0.5 1 2 3 4; do
+        for curv in 0.1 0.2 0.3 0.4 0.5; do
             out=tract_lmax${i_lmax}_${i_track}_${curv}.tck
             timeout 3600 streamtrack SD_PROB csd${i_lmax}.mif tmp.tck \
 		-grad $BGRAD \
                 -number $NUM \
-                -maxnum $MAXNUM \
+                -maxnum 1000000000000000 \
                 -curvature ${curv} \
                 -step $STEPSIZE \
                 -minlength $MINLENGTH \
@@ -245,14 +242,14 @@ for i_track in $(seq $NUM_REPETITIONS); do
 done
 
 ################# CLEANUP #######################################
-if [ -f ./track/track.tck ]; then
-    rm -rf ./roi/
-    rm -rf *.mif*
-    rm -rf grad.b
-    rm -rf *response*.txt
-    #rm -rf *.nii.gz #this removes aparc+aseg.nii.gz and other .nii.gz needed later
-    exit 0;
-else
-    echo "tracking failed"
-    exit 1;
-fi
+#if [ -f ./track/track.tck ]; then
+#    rm -rf ./roi/
+#    rm -rf *.mif*
+#    rm -rf grad.b
+#    rm -rf *response*.txt
+#    #rm -rf *.nii.gz #this removes aparc+aseg.nii.gz and other .nii.gz needed later
+#    exit 0;
+#else
+#    echo "tracking failed"
+#    exit 1;
+#fi

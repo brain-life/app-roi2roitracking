@@ -1,4 +1,4 @@
-function [ fg_classified,classification ] = eccentricityClassification(config,pre_fg_classified,wbFG)
+function [fg_classified,classification] = eccentricityClassification(config,whole_fg_classified,wbFG,clean_classification,hemi)
 
 % parse arguments
 MinDegree = [str2num(config.MinDegree)];
@@ -12,10 +12,10 @@ end
 % need to edit this for loop for multiple tracts in classification (i.e.
 % both left and right hemisphere OR, or OT and OR, etc). currently works
 % with one tract at a time
-for ifg = 1:length(pre_fg_classified)
+for ifg = 1:length(whole_fg_classified)
     for dd = 1:length(MinDegree)
         [~, keep.(sprintf('Ecc%sto%s',num2str(MinDegree(dd)),num2str(MaxDegree(dd))))] = ...
-            wma_SegmentFascicleFromConnectome(pre_fg_classified{ifg}, ...
+            wma_SegmentFascicleFromConnectome(whole_fg_classified{ifg}, ...
             [{eccen.(sprintf('Ecc%sto%s',num2str(MinDegree(dd)),num2str(MaxDegree(dd))))} ],...
             {'endpoints' }, 'dud');
         keep.(sprintf('Ecc%sto%s',num2str(MinDegree(dd)),num2str(MaxDegree(dd)))) = ...
@@ -37,11 +37,8 @@ for ii = 1:length(index_pre)
     end
 end
 
-classification = [];
-classification.index = index';
-
+classification.index = clean_classification.index.*index';
 % create new classification structure
 classification.names = {'macular','periphery','far_periphery'};
 fg_classified = bsc_makeFGsFromClassification_v4(classification,wbFG);
-
 end

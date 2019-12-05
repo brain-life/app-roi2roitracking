@@ -19,6 +19,7 @@ if [ ! -f csf_bin.mif ]; then
         # 5 tissue type visualization
         [ ! -f csf.mif ] && mrconvert -coord 3 3 5tt.mif csf.mif -force -nthreads $NCORE
         [ ! -f csf_bin.mif ] && mrthreshold -abs 0.0000001 csf.mif csf_bin.mif -force -nthreads $NCORE
+	[ ! -f csf_bin.nii.gz ] && mrconvert csf_bin.mif csf_bin.nii.gz -force -nthreads $NCORE
 else
         echo "csf mask already exits. skipping"
 fi
