@@ -217,7 +217,7 @@ for i_track in $(seq $NUM_REPETITIONS); do
             timeout 3600 streamtrack SD_PROB csd${i_lmax}.mif tmp.tck \
 		-grad $BGRAD \
                 -number $NUM \
-                -maxnum 1000000000000000 \
+                -maxnum ${MAXNUM} \
                 -curvature ${curv} \
                 -step $STEPSIZE \
                 -minlength $MINLENGTH \
