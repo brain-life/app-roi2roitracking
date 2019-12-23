@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l nodes=1:ppn=8,vmem=16g,walltime=18:00:00
+#PBS -l nodes=1:ppn=8,vmem=16g,walltime=24:00:00
 #PBS -N roi2roitrack
 #PBS -V
 
