@@ -9,13 +9,14 @@ if ~isdeployed
     addpath(genpath('/N/u/brlife/git/jsonlab'))
     addpath(genpath('/N/u/brlife/git/spm'))
     addpath(genpath('/N/u/brlife/git/wma'))
-
+    addpath(genpath('/N/u/brlife/git/wma_tools'))
     %for old VM
     addpath(genpath('/usr/local/vistasoft'))
     addpath(genpath('/usr/local/encode'))
     addpath(genpath('/usr/local/jsonlab'))
     addpath(genpath('/usr/local/spm'))
     addpath(genpath('/usr/local/wma'))
+    addpath(genpath('/usr/local/wma_tools'))
 end
 
 % Set top directory
