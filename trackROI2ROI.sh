@@ -15,8 +15,8 @@
 ## 3. mask.mif 
 
 #make the script to fail if any of the command fails.
-#set -e
-#
+set -e
+
 ##show commands executed (mainly for debugging)
 set -x
 
