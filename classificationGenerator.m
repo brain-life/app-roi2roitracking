@@ -73,7 +73,7 @@ for it = 1:length(tracts)
    %tract.coords = tracts(it).fibers;
    %pick randomly up to 1000 fibers (pick all if there are less than 1000)
    fiber_count = min(1000, numel(tracts{it}.fibers));
-   tract.coords = tracts(it).fibers(randperm(fiber_count)); 
+   tract.coords = tracts{it}.fibers(randperm(fiber_count)); 
    
    savejson('', tract, fullfile('tracts',sprintf('%i.json',it)));
    all_tracts(it).filename = sprintf('%i.json',it);
