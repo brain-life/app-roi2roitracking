@@ -65,14 +65,14 @@ mkdir('tracts');
 %cm = parula(length(tracts));
 cm = distinguishable_colors(length(tracts));
 for it = 1:length(tracts)
-   tract.name   = strrep(tracts(it).name, '_', ' ');
-   all_tracts(it).name = strrep(tracts(it).name, '_', ' ');
+   tract.name   = strrep(tracts{it}.name, '_', ' ');
+   all_tracts(it).name = strrep(tracts{it}.name, '_', ' ');
    all_tracts(it).color = cm(it,:);
    tract.color  = cm(it,:);
 
    %tract.coords = tracts(it).fibers;
    %pick randomly up to 1000 fibers (pick all if there are less than 1000)
-   fiber_count = min(1000, numel(tracts(it).fibers));
+   fiber_count = min(1000, numel(tracts{it}.fibers));
    tract.coords = tracts(it).fibers(randperm(fiber_count)); 
    
    savejson('', tract, fullfile('tracts',sprintf('%i.json',it)));
@@ -84,13 +84,13 @@ end
 savejson('', all_tracts, fullfile('tracts/tracts.json'));
 
 % Create and write output_fibercounts.txt file
-for i = 1 : length(fg_classified)
-    name = fg_classified(i).name;
-    num_fibers = length(fg_classified(i).fibers);
+for ii = 1 : length(fg_classified)
+    name = fg_classified{ii}.name;
+    num_fibers = length(fg_classified{ii}.fibers);
     
-    fibercounts(i) = num_fibers;
-    tract_info{i,1} = name;
-    tract_info{i,2} = num_fibers;
+    fibercounts(ii) = num_fibers;
+    tract_info{ii,1} = name;
+    tract_info{ii,2} = num_fibers;
 end
 
 T = cell2table(tract_info);
