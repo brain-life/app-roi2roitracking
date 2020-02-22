@@ -4,7 +4,7 @@
 ## Human Engogenous Attention Network
 ## (modified after Ilaria Sani - 20170117 - NHP Endogenous Attention Network)
 ## (modified after Brent McPherson)
-##
+## (modified after Brad Caron)
 ## MRTRIX PRE-PROCESSING (no need for WM mask for humans)
 ## This script process DTI data with MRTRIX, i.e. prepares the data for tracking
 ## it also creates a WM mask
@@ -15,19 +15,20 @@
 ## 3. mask.mif 
 
 #make the script to fail if any of the command fails.
-set -e
-
-#show commands executed (mainly for debugging)
+#set -e
+#
+##show commands executed (mainly for debugging)
 set -x
 
 ########### DEFINE PATHS #####################
 export PATH=$PATH:/usr/lib/mrtrix/bin
 
 BGRAD="grad.b"
+input_nii_gz=`jq -r '.dwi' config.json`
+BVALS=`jq -r '.bvals' config.json`
+BVECS=`jq -r '.bvecs' config.json`
+brainmask=`jq -r '.brainmask' config.json`
 dtiinit=`jq -r '.dtiinit' config.json`
-input_nii_gz=$dtiinit/`jq -r '.files.alignedDwRaw' $dtiinit/dt6.json`
-BVALS=$dtiinit/`jq -r '.files.alignedDwBvals' $dtiinit/dt6.json`
-BVECS=$dtiinit/`jq -r '.files.alignedDwBvecs' $dtiinit/dt6.json`
 fsurfer=`jq -r '.freesurfer' config.json`
 rois=`jq -r '.rois' config.json`
 roipair=`jq -r '.roiPair' config.json`
@@ -37,7 +38,26 @@ STEPSIZE=`jq -r '.stepsize' config.json`
 MINLENGTH=`jq -r '.minlength' config.json`
 MAXLENGTH=`jq -r '.maxlength' config.json`
 NUM_REPETITIONS=`jq -r '.num_repetitions' config.json`
+CURVATURE=`jq -r '.curv' config.json`
+MAXLMAX=`jq -r '.max_lmax' config.json`
+lmax2=`jq -r '.lmax2' config.json`
+lmax4=`jq -r '.lmax4' config.json`
+lmax6=`jq -r '.lmax6' config.json`
+lmax8=`jq -r '.lmax8' config.json`
+lmax10=`jq -r '.lmax10' config.json`
+lmax12=`jq -r '.lmax12' config.json`
+lmax14=`jq -r '.lmax14' config.json`
+single_lmax=`jq -r '.single_lmax' config.json`
 WMMK=wm_mask.mif
+
+# if dtiinit is inputted, set appropriate fields
+if [[ ! ${dtiinit} == "null" ]]; then
+	input_nii_gz=$dtiinit/*dwi_aligned*.nii.gz
+	BVALS=$dtiinit/*.bvals
+	BVECS=$dtiinit/*.bvecs
+	brainmask=$dtiinit/dti/bin/brainMask.nii.gz
+	mrconvert ${brainmask} mask.mif
+fi
 
 #generate grad.b from bvecs/bvals
 #load bvals/bvecs
@@ -58,7 +78,7 @@ for bval in $bvals; do
 done
 
 #if max_lmax is empty, auto calculate
-MAXLMAX=`jq -r '.max_lmax' config.json`
+
 if [[ $MAXLMAX == "null" || -z $MAXLMAX ]]; then
     echo "max_lmax is empty... determining which lmax to use from .bvals"
     MAXLMAX=`./calculatelmax.py`
@@ -66,10 +86,6 @@ fi
 
 if [ ! -f dwi.mif ]; then
     mrconvert $input_nii_gz dwi.mif
-fi
-
-if [ ! -f b0.mif ]; then
-    mrconvert mask_anat.nii.gz b0.mif
 fi
 
 if [ ! -f $WMMK ]; then
@@ -81,20 +97,24 @@ re='^[0-9]+$'
 for ROI in ${roipair[*]}
     do
         if ! [[ $ROI =~ $re ]]; then
-            cp $rois/$ROI.nii.gz ./
-            if [ ! -f $roi_${ROI}.mif ]; then
+	    if [ ! -f ./$ROI.nii.gz ]; then
+            	cp $rois/$ROI.nii.gz ./
+	    fi
+	    if [ ! -f $roi_${ROI}.mif ]; then
                 mrconvert $ROI.nii.gz roi_${ROI}.mif
             fi
             mv ${ROI}.nii.gz ./roi/
         else
-            cp $rois/ROI${ROI}.nii.gz ./
+	    if [ ! -f ./$ROI.nii.gz ]; then
+            	cp $rois/ROI${ROI}.nii.gz ./
+	    fi
             # add line to remove .nii.gz from name
             if [ ! -f roi_${ROI}.mif ]; then
                 mrconvert ROI${ROI}.nii.gz roi_${ROI}.mif
             fi
             mv ROI${ROI}.nii.gz ./roi/
         fi
-	done
+    done
 	ret=$?	
 	if [ ! $ret -eq 0 ]; then
 		exit $ret
@@ -104,83 +124,175 @@ for ROI in ${roipair[*]}
 ## create a t2-mask from b0
 if [ -f mask.mif ]; then
 	echo "t2-mask from b0 already exists...skipping"
-else
+elif [[ ${brainmask} == 'null' ]]; then
 	time average dwi.mif -axis 3 - | threshold - - | median3D - - | median3D - mask.mif
 	ret=$?
 	if [ ! $ret -eq 0 ]; then
 		exit $ret
 	fi
-fi
-
-## fit diffusion model
-if [ -f dt.mif ]; then
-	echo "diffusion tensor already exists...skipping"
 else
-	time dwi2tensor dwi.mif -grad $BGRAD dt.mif
+	mrconvert ${brainmask} mask.mif
 	ret=$?
 	if [ ! $ret -eq 0 ]; then
 		exit $ret
 	fi
 fi
 
-## create FA image
-if [ -f fa.mif ]; then
-	echo "FA image already exists...skipping"
-else
-	time tensor2FA dt.mif - | mrmult - mask.mif fa.mif
-	ret=$?
-	if [ ! $ret -eq 0 ]; then
-		exit $ret
-	fi
-fi
-
-## create rgb eingenvectors
-if [ -f ev.mif ]; then
-	echo "RGB eigenvectors already exists...skipping"
-else
-	time tensor2vector dt.mif - | mrmult - mask.mif ev.mif
-	if [ ! $ret -eq 0 ]; then
-		exit $ret
-	fi
-fi
-
-## create single fiber mask
-if [ -f sf.mif ]; then
-	echo "Single fiber mask already exists...skipping"
-else
-	time erode mask.mif -npass 3 - | mrmult fa.mif - - | threshold - -abs 0.7 sf.mif
-	if [ ! $ret -eq 0 ]; then
-		exit $ret
-	fi
-fi
-
-## create response numbers for CSD fit
-for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
-	if [ -f response${i_lmax}.txt ]; then
-    		echo "response${i_lmax}.txt already exist... skipping"
-	else
-    		time estimate_response -quiet dwi.mif sf.mif -grad $BGRAD -lmax $i_lmax response${i_lmax}.txt
-    		ret=$?
-    		if [ ! $ret -eq 0 ]; then
-			exit $ret
-    		fi
-	fi
-done
-
-## fit csd model
-for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
-# Perform CSD in each white matter voxel
-	lmaxout=csd${i_lmax}.mif
-	if [ -s $lmaxout ]; then
-		echo "$lmaxout already exist - skipping csdeconv"
-	else
-		time csdeconv -quiet dwi.mif -grad $BGRAD response${i_lmax}.txt -lmax $i_lmax -mask mask.mif $lmaxout
-		ret=$?
-		if [ ! $ret -eq 0 ]; then
-			exit $ret
+# csd generation or copying
+if [[ ${single_lmax} == true ]]; then
+	# copy over lmax if inputted. else, create lmax
+	if [ ! -f csd${MAXLMAX}.mif ]; then
+		lmaxvar=$(eval "echo \$lmax${MAXLMAX}")
+		if [[ ${lmaxvar} == 'null' ]]; then
+			## fit diffusion model
+			if [ -f dt.mif ]; then
+				echo "diffusion tensor already exists...skipping"
+			else
+				time dwi2tensor dwi.mif -grad $BGRAD dt.mif
+				ret=$?
+				if [ ! $ret -eq 0 ]; then
+					exit $ret
+				fi
+			fi
+			
+			## create FA image
+			if [ -f fa.mif ]; then
+				echo "FA image already exists...skipping"
+			else
+				time tensor2FA dt.mif - | mrmult - mask.mif fa.mif
+				ret=$?
+				if [ ! $ret -eq 0 ]; then
+					exit $ret
+				fi
+			fi
+			
+			## create rgb eingenvectors
+			if [ -f ev.mif ]; then
+				echo "RGB eigenvectors already exists...skipping"
+			else
+				time tensor2vector dt.mif - | mrmult - mask.mif ev.mif
+				if [ ! $ret -eq 0 ]; then
+					exit $ret
+				fi
+			fi
+			
+			## create single fiber mask
+			if [ -f sf.mif ]; then
+				echo "Single fiber mask already exists...skipping"
+			else
+				time erode mask.mif -npass 3 - | mrmult fa.mif - - | threshold - -abs 0.7 sf.mif
+				if [ ! $ret -eq 0 ]; then
+					exit $ret
+				fi
+			fi
+			
+			## create response numbers for CSD fit
+			if [ -f response${MAXLMAX}.txt ]; then
+			    	echo "response${MAXLMAX}.txt already exist... skipping"
+			else
+			    	time estimate_response -quiet dwi.mif sf.mif -grad $BGRAD -lmax $MAXLMAX response${MAXLMAX}.txt
+			    	ret=$?
+			    	if [ ! $ret -eq 0 ]; then
+					exit $ret
+			    	fi
+			fi
+			
+			## fit csd model
+			# Perform CSD in each white matter voxel
+			lmaxout=csd${MAXLMAX}.mif
+			if [ -s $lmaxout ]; then
+				echo "$lmaxout already exist - skipping csdeconv"
+			else
+				time csdeconv -quiet dwi.mif -grad $BGRAD response${MAXLMAX}.txt -lmax $MAXLMAX -mask mask.mif $lmaxout
+				ret=$?
+				if [ ! $ret -eq 0 ]; then
+					exit $ret
+				fi
+			fi
+		else
+			echo "csd already inputted. skipping csd generation"
+			mrconvert ${lmaxvar} ./csd${MAXLMAX}.mif
 		fi
+	else
+		echo "csd exists. skipping"
 	fi
-done
+else
+	for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
+		if [ ! -f csd${i_lmax}.mif ]; then
+			lmaxvar=$(eval "echo \$lmax${i_lmax}")
+			if [[ ${i_lmax} == 'null' ]]; then
+				## fit diffusion model
+				if [ -f dt.mif ]; then
+					echo "diffusion tensor already exists...skipping"
+				else
+					time dwi2tensor dwi.mif -grad $BGRAD dt.mif
+					ret=$?
+					if [ ! $ret -eq 0 ]; then
+						exit $ret
+					fi
+				fi
+				
+				## create FA image
+				if [ -f fa.mif ]; then
+					echo "FA image already exists...skipping"
+				else
+					time tensor2FA dt.mif - | mrmult - mask.mif fa.mif
+					ret=$?
+					if [ ! $ret -eq 0 ]; then
+						exit $ret
+					fi
+				fi
+				
+				## create rgb eingenvectors
+				if [ -f ev.mif ]; then
+					echo "RGB eigenvectors already exists...skipping"
+				else
+					time tensor2vector dt.mif - | mrmult - mask.mif ev.mif
+					if [ ! $ret -eq 0 ]; then
+						exit $ret
+					fi
+				fi
+				
+				## create single fiber mask
+				if [ -f sf.mif ]; then
+					echo "Single fiber mask already exists...skipping"
+				else
+					time erode mask.mif -npass 3 - | mrmult fa.mif - - | threshold - -abs 0.7 sf.mif
+					if [ ! $ret -eq 0 ]; then
+						exit $ret
+					fi
+				fi
+				
+				## create response numbers for CSD fit
+				if [ -f response${i_lmax}.txt ]; then
+				    	echo "response${i_lmax}.txt already exist... skipping"
+				else
+				    	time estimate_response -quiet dwi.mif sf.mif -grad $BGRAD -lmax $i_lmax response${i_lmax}.txt
+				    	ret=$?
+				    	if [ ! $ret -eq 0 ]; then
+						exit $ret
+				    	fi
+				fi
+				
+				## fit csd model
+				# Perform CSD in each white matter voxel
+				lmaxout=csd${i_lmax}.mif
+				time csdeconv -quiet dwi.mif -grad $BGRAD response${i_lmax}.txt -lmax $i_lmax -mask mask.mif $lmaxout
+				ret=$?
+				if [ ! $ret -eq 0 ]; then
+					exit $ret
+				fi
+
+			else
+				echo "csd already inputted. skipping csd generation"
+				mrconvert ${lmaxvar} ./csd${MAXLMAX}.mif
+			fi
+
+		else
+			echo "csd exists. skipping"
+		fi
+	done
+fi
 
 ################# ROI2ROI TRACKING ############################
 ROI=(*roi_*.mif);
@@ -189,25 +301,45 @@ nTracts=` expr ${range} / 2`
 for (( i=0; i<=$nTracts; i+=2 )); do
     for i_track in $(seq $NUM_REPETITIONS); do
         echo ${i_track}
-        for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
-            for curv in 0.5 1 2 3 4; do
-                out=tract$((i/2+1))_lmax${i_lmax}_crv${curv}_${i_track}.tck
-                timeout 3600 streamtrack -quiet SD_PROB csd${i_lmax}.mif tmp.tck \
-                    -mask $WMMK \
-                    -grad $BGRAD \
-                    -number $NUM \
-                    -maxnum $MAXNUM \
-                    -curvature $curv \
-                    -step $STEPSIZE \
-                    -minlength $MINLENGTH \
-                    -length $MAXLENGTH \
-                    -seed ${ROI[$((i))]} \
-                    -include ${ROI[$((i))]} \
-                    -include ${ROI[$((i+1))]} \
-                    -stop
-                mv tmp.tck $out
-            done
-        done
+	if [[ ${single_lmax} == true ]]; then
+		for curv in ${CURVATURE}; do
+                	out=tract$((i/2+1))_lmax${MAXLMAX}_crv${curv}_${i_track}.tck
+                	timeout 3600 streamtrack -quiet SD_PROB csd${MAXLMAX}.mif tmp.tck \
+                	    -mask $WMMK \
+                	    -grad $BGRAD \
+                	    -number $NUM \
+                	    -maxnum $MAXNUM \
+                	    -curvature $curv \
+                	    -step $STEPSIZE \
+                	    -minlength $MINLENGTH \
+                	    -length $MAXLENGTH \
+                	    -seed ${ROI[$((i))]} \
+                	    -include ${ROI[$((i))]} \
+                	    -include ${ROI[$((i+1))]} \
+                	    -stop
+                	mv tmp.tck $out
+		done
+	else
+        	for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
+        	    for curv in ${CURVATURE}; do
+        	        out=tract$((i/2+1))_lmax${i_lmax}_crv${curv}_${i_track}.tck
+        	        timeout 3600 streamtrack -quiet SD_PROB csd${i_lmax}.mif tmp.tck \
+        	            -mask $WMMK \
+        	            -grad $BGRAD \
+        	            -number $NUM \
+        	            -maxnum $MAXNUM \
+        	            -curvature $curv \
+        	            -step $STEPSIZE \
+        	            -minlength $MINLENGTH \
+        	            -length $MAXLENGTH \
+        	            -seed ${ROI[$((i))]} \
+        	            -include ${ROI[$((i))]} \
+        	            -include ${ROI[$((i+1))]} \
+        	            -stop
+        	        mv tmp.tck $out
+        	    done
+        	done
+	fi
     done
 
     ## concatenate tracts

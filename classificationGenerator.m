@@ -50,7 +50,7 @@ end
 
 % Create fg_classified structure
 wbFG = mergedFG;
-fg_classified = bsc_makeFGsFromClassification(classification,wbFG);
+fg_classified = bsc_makeFGsFromClassification_v4(classification,wbFG);
 
 % Save output
 save('output.mat','classification','fg_classified','-v7.3');

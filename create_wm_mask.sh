@@ -3,14 +3,19 @@
 ## Create white matter mask and move rois to diffusion space for tracking
 
 #exit if any command fails
-set -e 
+#set -e 
+#
+##show commands runnings
+#set -x
 
-#show commands runnings
-set -x
-
+dwi=`jq -r '.dwi' config.json`
 dtiinit=`jq -r '.dtiinit' config.json`
 fsurfer=`jq -r '.freesurfer' config.json`
-export input_nii_gz=$dtiinit/`jq -r '.files.alignedDwRaw' $dtiinit/dt6.json`
+if [[ ! ${dtiinit} == 'null' ]]; then
+	export input_nii_gz=$dtiinit/`jq -r '.files.alignedDwRaw' $dtiinit/dt6.json`
+else
+	export input_nii_gz=${dwi}
+fi
 
 mri_label2vol --seg $fsurfer/mri/aparc+aseg.mgz \
     --temp $input_nii_gz \
