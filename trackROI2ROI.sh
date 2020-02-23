@@ -48,6 +48,7 @@ lmax10=`jq -r '.lmax10' config.json`
 lmax12=`jq -r '.lmax12' config.json`
 lmax14=`jq -r '.lmax14' config.json`
 single_lmax=`jq -r '.single_lmax' config.json`
+multiple_seed=`jq -r '.multiple_seed' config.json`
 WMMK=wm_mask.mif
 
 # if dtiinit is inputted, set appropriate fields
@@ -299,6 +300,12 @@ ROI=(*roi_*.mif);
 range=` expr ${#ROI[@]}`
 nTracts=` expr ${range} / 2`
 for (( i=0; i<=$nTracts; i+=2 )); do
+    if [[ ${multiple_seed} == true ]]; then
+        mradd ${ROI[$((i))]} ${ROI[$((i+1))]} seed.mif
+	seed=seed.mif
+    else
+	seed=${ROI[$((i))]}
+    fi
     for i_track in $(seq $NUM_REPETITIONS); do
         echo ${i_track}
 	if [[ ${single_lmax} == true ]]; then
@@ -313,7 +320,7 @@ for (( i=0; i<=$nTracts; i+=2 )); do
                 	    -step $STEPSIZE \
                 	    -minlength $MINLENGTH \
                 	    -length $MAXLENGTH \
-                	    -seed ${ROI[$((i))]} \
+			    -seed ${seed} \
                 	    -include ${ROI[$((i))]} \
                 	    -include ${ROI[$((i+1))]} \
                 	    -stop
@@ -332,7 +339,7 @@ for (( i=0; i<=$nTracts; i+=2 )); do
         	            -step $STEPSIZE \
         	            -minlength $MINLENGTH \
         	            -length $MAXLENGTH \
-        	            -seed ${ROI[$((i))]} \
+			    -seed ${seed} \
         	            -include ${ROI[$((i))]} \
         	            -include ${ROI[$((i+1))]} \
         	            -stop

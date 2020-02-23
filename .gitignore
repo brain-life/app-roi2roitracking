@@ -1,2 +1,10 @@
 config.json
 build.m
+./roi/
+./track/
+*.mif
+*.nii.gz
+grad.b
+./wmc/
+*.tck
+*track*.txt
