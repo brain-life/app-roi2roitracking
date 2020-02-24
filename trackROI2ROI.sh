@@ -141,57 +141,62 @@ fi
 
 # csd generation or copying
 if [[ ${single_lmax} == true ]]; then
+	lmaxs=$(seq ${MAXLMAX} ${MAXLMAX})
+else
+	lmaxs=$(seq 2 2 ${MAXLMAX})
+fi
+
+for LMAXS in ${lmaxs}; do
 	# copy over lmax if inputted. else, create lmax
 	if [ ! -f csd${MAXLMAX}.mif ]; then
 		lmaxvar=$(eval "echo \$lmax${MAXLMAX}")
 		if [[ ${lmaxvar} == 'null' ]]; then
-			## fit diffusion model
 			if [ -f dt.mif ]; then
-				echo "diffusion tensor already exists...skipping"
+			        echo "diffusion tensor already exists...skipping"
 			else
-				time dwi2tensor dwi.mif -grad $BGRAD dt.mif
-				ret=$?
-				if [ ! $ret -eq 0 ]; then
-					exit $ret
-				fi
+			        time dwi2tensor dwi.mif -grad $BGRAD dt.mif
+			        ret=$?
+			        if [ ! $ret -eq 0 ]; then
+			                exit $ret
+			        fi
 			fi
 			
 			## create FA image
 			if [ -f fa.mif ]; then
-				echo "FA image already exists...skipping"
+			        echo "FA image already exists...skipping"
 			else
-				time tensor2FA dt.mif - | mrmult - mask.mif fa.mif
-				ret=$?
-				if [ ! $ret -eq 0 ]; then
-					exit $ret
-				fi
+			        time tensor2FA dt.mif - | mrmult - mask.mif fa.mif
+			        ret=$?
+			        if [ ! $ret -eq 0 ]; then
+			                exit $ret
+			        fi
 			fi
 			
 			## create rgb eingenvectors
 			if [ -f ev.mif ]; then
-				echo "RGB eigenvectors already exists...skipping"
+			        echo "RGB eigenvectors already exists...skipping"
 			else
-				time tensor2vector dt.mif - | mrmult - mask.mif ev.mif
-				if [ ! $ret -eq 0 ]; then
-					exit $ret
-				fi
+			        time tensor2vector dt.mif - | mrmult - mask.mif ev.mif
+			        if [ ! $ret -eq 0 ]; then
+			                exit $ret
+			        fi
 			fi
 			
 			## create single fiber mask
 			if [ -f sf.mif ]; then
-				echo "Single fiber mask already exists...skipping"
+			        echo "Single fiber mask already exists...skipping"
 			else
-				time erode mask.mif -npass 3 - | mrmult fa.mif - - | threshold - -abs 0.7 sf.mif
-				if [ ! $ret -eq 0 ]; then
-					exit $ret
-				fi
+			        time erode mask.mif -npass 3 - | mrmult fa.mif - - | threshold - -abs 0.7 sf.mif
+			        if [ ! $ret -eq 0 ]; then
+			                exit $ret
+			        fi
 			fi
-			
+
 			## create response numbers for CSD fit
-			if [ -f response${MAXLMAX}.txt ]; then
-			    	echo "response${MAXLMAX}.txt already exist... skipping"
+			if [ -f response${LMAXS}.txt ]; then
+			    	echo "response${LMAXS}.txt already exist... skipping"
 			else
-			    	time estimate_response -quiet dwi.mif sf.mif -grad $BGRAD -lmax $MAXLMAX response${MAXLMAX}.txt
+			    	time estimate_response -quiet dwi.mif sf.mif -grad $BGRAD -lmax ${LMAXS} response${LMAXS}.txt
 			    	ret=$?
 			    	if [ ! $ret -eq 0 ]; then
 					exit $ret
@@ -200,11 +205,11 @@ if [[ ${single_lmax} == true ]]; then
 			
 			## fit csd model
 			# Perform CSD in each white matter voxel
-			lmaxout=csd${MAXLMAX}.mif
+			lmaxout=csd${LMAXS}.mif
 			if [ -s $lmaxout ]; then
 				echo "$lmaxout already exist - skipping csdeconv"
 			else
-				time csdeconv -quiet dwi.mif -grad $BGRAD response${MAXLMAX}.txt -lmax $MAXLMAX -mask mask.mif $lmaxout
+				time csdeconv -quiet dwi.mif -grad $BGRAD response${LMAXS}.txt -lmax $LMAXS -mask mask.mif $lmaxout
 				ret=$?
 				if [ ! $ret -eq 0 ]; then
 					exit $ret
@@ -217,152 +222,56 @@ if [[ ${single_lmax} == true ]]; then
 	else
 		echo "csd exists. skipping"
 	fi
-else
-	for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
-		if [ ! -f csd${i_lmax}.mif ]; then
-			lmaxvar=$(eval "echo \$lmax${i_lmax}")
-			if [[ ${i_lmax} == 'null' ]]; then
-				## fit diffusion model
-				if [ -f dt.mif ]; then
-					echo "diffusion tensor already exists...skipping"
-				else
-					time dwi2tensor dwi.mif -grad $BGRAD dt.mif
-					ret=$?
-					if [ ! $ret -eq 0 ]; then
-						exit $ret
-					fi
-				fi
-				
-				## create FA image
-				if [ -f fa.mif ]; then
-					echo "FA image already exists...skipping"
-				else
-					time tensor2FA dt.mif - | mrmult - mask.mif fa.mif
-					ret=$?
-					if [ ! $ret -eq 0 ]; then
-						exit $ret
-					fi
-				fi
-				
-				## create rgb eingenvectors
-				if [ -f ev.mif ]; then
-					echo "RGB eigenvectors already exists...skipping"
-				else
-					time tensor2vector dt.mif - | mrmult - mask.mif ev.mif
-					if [ ! $ret -eq 0 ]; then
-						exit $ret
-					fi
-				fi
-				
-				## create single fiber mask
-				if [ -f sf.mif ]; then
-					echo "Single fiber mask already exists...skipping"
-				else
-					time erode mask.mif -npass 3 - | mrmult fa.mif - - | threshold - -abs 0.7 sf.mif
-					if [ ! $ret -eq 0 ]; then
-						exit $ret
-					fi
-				fi
-				
-				## create response numbers for CSD fit
-				if [ -f response${i_lmax}.txt ]; then
-				    	echo "response${i_lmax}.txt already exist... skipping"
-				else
-				    	time estimate_response -quiet dwi.mif sf.mif -grad $BGRAD -lmax $i_lmax response${i_lmax}.txt
-				    	ret=$?
-				    	if [ ! $ret -eq 0 ]; then
-						exit $ret
-				    	fi
-				fi
-				
-				## fit csd model
-				# Perform CSD in each white matter voxel
-				lmaxout=csd${i_lmax}.mif
-				time csdeconv -quiet dwi.mif -grad $BGRAD response${i_lmax}.txt -lmax $i_lmax -mask mask.mif $lmaxout
-				ret=$?
-				if [ ! $ret -eq 0 ]; then
-					exit $ret
-				fi
-
-			else
-				echo "csd already inputted. skipping csd generation"
-				mrconvert ${lmaxvar} ./csd${MAXLMAX}.mif
-			fi
-
-		else
-			echo "csd exists. skipping"
-		fi
-	done
-fi
+done
 
 ################# ROI2ROI TRACKING ############################
 ROI=(*roi_*.mif);
 range=` expr ${#ROI[@]}`
 nTracts=` expr ${range} / 2`
-for (( i=0; i<=$nTracts; i+=2 )); do
-    if [[ ${multiple_seed} == true ]]; then
-        mradd ${ROI[$((i))]} ${ROI[$((i+1))]} seed.mif
-	seed=seed.mif
-    else
-	seed=${ROI[$((i))]}
-    fi
+
+if [[ ${multiple_seed} == true ]]; then
+    mradd ${ROI[$((i))]} ${ROI[$((i+1))]} seed.mif
+    seed=seed.mif
+else
+    seed=${ROI[$((i))]}
+fi
+
+for LMAXS in ${lmaxs}; DO
     for i_track in $(seq $NUM_REPETITIONS); do
         echo ${i_track}
-	if [[ ${single_lmax} == true ]]; then
-		for curv in ${CURVATURE}; do
-                	out=tract$((i/2+1))_lmax${MAXLMAX}_crv${curv}_${i_track}.tck
-                	timeout 3600 streamtrack -quiet SD_PROB csd${MAXLMAX}.mif tmp.tck \
-                	    -mask $WMMK \
-                	    -grad $BGRAD \
-                	    -number $NUM \
-                	    -maxnum $MAXNUM \
-                	    -curvature $curv \
-                	    -step $STEPSIZE \
-                	    -minlength $MINLENGTH \
-                	    -length $MAXLENGTH \
-			    -seed ${seed} \
-                	    -include ${ROI[$((i))]} \
-                	    -include ${ROI[$((i+1))]} \
-                	    -stop
-                	mv tmp.tck $out
+	for curv in ${CURVATURE}; do
+                out=tract$((i/2+1))_lmax${LMAXS}_crv${curv}_${i_track}.tck
+                timeout 3600 streamtrack -quiet SD_PROB csd${LMAXS}.mif tmp.tck \
+                    -mask $WMMK \
+                    -grad $BGRAD \
+                    -number $NUM \
+                    -maxnum $MAXNUM \
+                    -curvature $curv \
+                    -step $STEPSIZE \
+                    -minlength $MINLENGTH \
+                    -length $MAXLENGTH \
+		    -seed ${seed} \
+                    -include ${ROI[$((i))]} \
+                    -include ${ROI[$((i+1))]} \
+                    -stop
+                mv tmp.tck $out
 		done
-	else
-        	for (( i_lmax=2; i_lmax<=$MAXLMAX; i_lmax+=2 )); do
-        	    for curv in ${CURVATURE}; do
-        	        out=tract$((i/2+1))_lmax${i_lmax}_crv${curv}_${i_track}.tck
-        	        timeout 3600 streamtrack -quiet SD_PROB csd${i_lmax}.mif tmp.tck \
-        	            -mask $WMMK \
-        	            -grad $BGRAD \
-        	            -number $NUM \
-        	            -maxnum $MAXNUM \
-        	            -curvature $curv \
-        	            -step $STEPSIZE \
-        	            -minlength $MINLENGTH \
-        	            -length $MAXLENGTH \
-			    -seed ${seed} \
-        	            -include ${ROI[$((i))]} \
-        	            -include ${ROI[$((i+1))]} \
-        	            -stop
-        	        mv tmp.tck $out
-        	    done
-        	done
-	fi
-    done
+	done
+	
+## concatenate tracts
+holder=(*tract$((i/2+1))*.tck)
+cat_tracks track$((i/2+1)).tck ${holder[*]}
+if [ ! $ret -eq 0 ]; then
+    exit $ret
+fi
+rm -rf ${holder[*]}
 
-    ## concatenate tracts
-    holder=(*tract$((i/2+1))*.tck)
-    cat_tracks track$((i/2+1)).tck ${holder[*]}
-    if [ ! $ret -eq 0 ]; then
-        exit $ret
-    fi
-    rm -rf ${holder[*]}
-    ## tract info
-    track_info track$((i/2+1)).tck > track_info$((i/2+1)).txt
-    if [[ $((i/2+1)) == 1 ]];then
-        mv track_info$((i/2+1)).txt track_info.txt
-        mv track$((i/2+1)).tck track.tck
-    fi
-done
+## tract info
+track_info track$((i/2+1)).tck > track_info$((i/2+1)).txt
+if [[ $((i/2+1)) == 1 ]];then
+    mv track_info$((i/2+1)).txt track_info.txt
+    mv track$((i/2+1)).tck track.tck
+fi
 
 ################# CREATE CLASSIFICATION STRUCTURE ###############
 ./compiled/classificationGenerator
