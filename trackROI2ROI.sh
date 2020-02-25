@@ -15,7 +15,7 @@
 ## 3. mask.mif 
 
 #make the script to fail if any of the command fails.
-set -e
+#set -e
 
 ##show commands executed (mainly for debugging)
 set -x
@@ -230,48 +230,52 @@ range=` expr ${#ROI[@]}`
 nTracts=` expr ${range} / 2`
 
 if [[ ${multiple_seed} == true ]]; then
-    mradd ${ROI[$((i))]} ${ROI[$((i+1))]} seed.mif
+    mradd *roi_*.mif seed.mif
     seed=seed.mif
 else
-    seed=${ROI[$((i))]}
+    seed_name="$(echo ${roipair} | cut -d' ' -f1)"
+    seed=roi_${seed_name}.mif
 fi
 
-for LMAXS in ${lmaxs}; DO
-    for i_track in $(seq $NUM_REPETITIONS); do
-        echo ${i_track}
-	for curv in ${CURVATURE}; do
-                out=tract$((i/2+1))_lmax${LMAXS}_crv${curv}_${i_track}.tck
-                timeout 3600 streamtrack -quiet SD_PROB csd${LMAXS}.mif tmp.tck \
-                    -mask $WMMK \
-                    -grad $BGRAD \
-                    -number $NUM \
-                    -maxnum $MAXNUM \
-                    -curvature $curv \
-                    -step $STEPSIZE \
-                    -minlength $MINLENGTH \
-                    -length $MAXLENGTH \
-		    -seed ${seed} \
-                    -include ${ROI[$((i))]} \
-                    -include ${ROI[$((i+1))]} \
-                    -stop
-                mv tmp.tck $out
+for (( i=0; i<=$nTracts; i+=2 )); do
+	for LMAXS in ${lmaxs}; do
+		for i_track in $(seq $NUM_REPETITIONS); do
+			 echo ${i_track}
+			 for curv in ${CURVATURE}; do
+				 out=tract$((i/2+1))_lmax${LMAXS}_crv${curv}_${i_track}.tck
+				 timeout 3600 streamtrack -quiet SD_PROB csd${LMAXS}.mif tmp.tck \
+				-mask $WMMK \
+				-grad $BGRAD \
+				-number $NUM \
+				-maxnum $MAXNUM \
+				-curvature $curv \
+				-step $STEPSIZE \
+				-minlength $MINLENGTH \
+				-length $MAXLENGTH \
+				-seed ${seed} \
+				-include ${ROI[$((i))]} \
+				-include ${ROI[$((i+1))]} \
+				-stop
+	    	    	        mv tmp.tck $out
+			done
 		done
 	done
-	
-## concatenate tracts
-holder=(*tract$((i/2+1))*.tck)
-cat_tracks track$((i/2+1)).tck ${holder[*]}
-if [ ! $ret -eq 0 ]; then
-    exit $ret
-fi
-rm -rf ${holder[*]}
 
-## tract info
-track_info track$((i/2+1)).tck > track_info$((i/2+1)).txt
-if [[ $((i/2+1)) == 1 ]];then
-    mv track_info$((i/2+1)).txt track_info.txt
-    mv track$((i/2+1)).tck track.tck
-fi
+	## concatenate tracts
+	holder=(*tract$((i/2+1))*.tck)
+	cat_tracks track$((i/2+1)).tck ${holder[*]}
+	if [ ! $ret -eq 0 ]; then
+	    exit $ret
+	fi
+	rm -rf ${holder[*]}
+	
+	## tract info
+	track_info track$((i/2+1)).tck > track_info$((i/2+1)).txt
+	if [[ $((i/2+1)) == 1 ]];then
+	    mv track_info$((i/2+1)).txt track_info.txt
+	    mv track$((i/2+1)).tck track.tck
+	fi
+done
 
 ################# CREATE CLASSIFICATION STRUCTURE ###############
 ./compiled/classificationGenerator
