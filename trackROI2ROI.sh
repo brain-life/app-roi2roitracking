@@ -281,8 +281,13 @@ done
 ./compiled/classificationGenerator
 
 ################# CLEANUP #######################################
-rm -rf ./roi/
-rm -rf *.mif*
-rm -rf grad.b
-rm -rf *response*.txt
+if [ -f ./track/track/tck ]; then
+	rm -rf ./roi/
+	rm -rf *.mif*
+	rm -rf grad.b
+	rm -rf *response*.txt
+else
+	echo "tracking failed"
+	exit 1
+fi
 #rm -rf *.nii.gz #this removes aparc+aseg.nii.gz and other .nii.gz needed later

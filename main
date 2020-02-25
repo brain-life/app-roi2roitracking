@@ -23,3 +23,11 @@ mv track_info.txt ./track/
 
 echo "generating surfaces/"
 time singularity exec -e docker://brainlife/pythonvtk:1.1 ./freesurfer2vtks.py aparc+aseg.nii.gz
+
+if [ ! -f ./wmc/classification.mat ]; then
+	echo "failed"
+	exit 1
+else
+	echo "complete"
+	exit 0
+fi
