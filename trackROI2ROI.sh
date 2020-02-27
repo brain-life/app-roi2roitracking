@@ -243,7 +243,7 @@ for (( i=0; i<=$nTracts; i+=2 )); do
 			 echo ${i_track}
 			 for curv in ${CURVATURE}; do
 				 out=tract$((i/2+1))_lmax${LMAXS}_crv${curv}_${i_track}.tck
-				 timeout 3600 streamtrack -quiet SD_PROB csd${LMAXS}.mif tmp.tck \
+				 streamtrack -quiet SD_PROB csd${LMAXS}.mif tmp.tck \
 				-mask $WMMK \
 				-grad $BGRAD \
 				-number $NUM \
