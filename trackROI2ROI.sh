@@ -49,9 +49,10 @@ lmax12=`jq -r '.lmax12' config.json`
 lmax14=`jq -r '.lmax14' config.json`
 single_lmax=`jq -r '.single_lmax' config.json`
 multiple_seed=`jq -r '.multiple_seed' config.json`
+white_matter=`jq -r '.white_matter' config.json`
 WMMK=wm_mask.mif
 
-# if dtiinit is inputted, set appropriate fields
+# if dtiinit is inputted, set appropriate field
 if [[ ! ${dtiinit} == "null" ]]; then
 	input_nii_gz=$dtiinit/*dwi_aligned*.nii.gz
 	BVALS=$dtiinit/*.bvals
@@ -89,8 +90,10 @@ if [ ! -f dwi.mif ]; then
     mrconvert $input_nii_gz dwi.mif
 fi
 
-if [ ! -f $WMMK ]; then
-    mrconvert wm_anat.nii.gz $WMMK
+if [ ! -f $WMMK ] && [[ ${white_matter} == 'null' ]]; then
+	mrconvert wm_anat.nii.gz $WMMK
+else
+	mrconvert ${white_matter} $WMMK
 fi
 
 mkdir -p roi
