@@ -52,6 +52,8 @@ multiple_seed=`jq -r '.multiple_seed' config.json`
 white_matter=`jq -r '.white_matter' config.json`
 WMMK=wm_mask.mif
 
+mkdir -p csd
+
 # if dtiinit is inputted, set appropriate field
 if [[ ! ${dtiinit} == "null" ]]; then
 	input_nii_gz=$dtiinit/*dwi_aligned*.nii.gz
@@ -218,9 +220,17 @@ for LMAXS in ${lmaxs}; do
 					exit $ret
 				fi
 			fi
+			if [ ! -f ./csd/lmax${LMAXS}.nii.gz ]; then
+				mrconvert csd${LMAXS}.mif ./csd/lmax${LMAXS}.nii.gz
+				ret=$?
+				if [ ! $ret -eq -0 ]; then
+					exit $ret
+				fi
+			fi
 		else
 			echo "csd already inputted. skipping csd generation"
 			mrconvert ${lmaxvar} ./csd${MAXLMAX}.mif
+			cp -v ${lmaxvar} ./csd/
 		fi
 	else
 		echo "csd exists. skipping"
