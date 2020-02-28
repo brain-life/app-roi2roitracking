@@ -79,9 +79,9 @@ bvecs_z=($bvecs_z)
 #output grad.b
 i=0
 
-if [[ ${flip_lr} == 'true' ]];then
+if [[ ${flip_lr} == 'true' ]] ;then
 	for bval in $bvals; do
-		bvecs_x[$i]=`awk "BEGIN {print ${bvecs_x[$i]} * -1}"`
+		bvecs_x[$i]=`awk "BEGIN {print ${bvecs_x[$i]} * -1}"`;
 		i=$((i+1))
 	done
 	i=0
