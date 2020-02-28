@@ -47,13 +47,15 @@ lmax8=`jq -r '.lmax8' config.json`
 lmax10=`jq -r '.lmax10' config.json`
 lmax12=`jq -r '.lmax12' config.json`
 lmax14=`jq -r '.lmax14' config.json`
+response=`jq -r '.response' config.json`
 single_lmax=`jq -r '.single_lmax' config.json`
 multiple_seed=`jq -r '.multiple_seed' config.json`
 white_matter=`jq -r '.white_matter' config.json`
-flip_lr=`jq -r '.flip_lr' config.json`
 WMMK=wm_mask.mif
 
 mkdir -p csd
+mkdir -p track
+mkdir -p wmc
 
 # if dtiinit is inputted, set appropriate field
 if [[ ! ${dtiinit} == "null" ]]; then
@@ -237,10 +239,14 @@ for LMAXS in ${lmaxs}; do
 					exit $ret
 				fi
 			fi
+			if [[ ${LMAXS} == ${MAXLMAX} ]]; then
+				cp response${LMAXS}.txt ./csd/
+			fi
 		else
 			echo "csd already inputted. skipping csd generation"
 			mrconvert ${lmaxvar} ./csd${MAXLMAX}.mif
 			cp -v ${lmaxvar} ./csd/
+			cp -v ${response} ./csd/ 
 		fi
 	else
 		echo "csd exists. skipping"
@@ -304,11 +310,16 @@ done
 ./compiled/classificationGenerator
 
 ################# CLEANUP #######################################
-if [ -f ./track/track/tck ]; then
+if [ -f output.mat ]; then
 	rm -rf ./roi/
 	rm -rf *.mif*
 	rm -rf grad.b
 	rm -rf *response*.txt
+	mv track.tck ./track/
+	mv track_info.txt ./track/
+	mv output.mat ./wmc/classification.mat
+	mv output_fibercounts.txt ./wmc/classification
+	mv tracts ./wmc/
 else
 	echo "tracking failed"
 	exit 1
