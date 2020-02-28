@@ -240,7 +240,7 @@ for LMAXS in ${lmaxs}; do
 				fi
 			fi
 			if [[ ${LMAXS} == ${MAXLMAX} ]]; then
-				cp response${LMAXS}.txt ./csd/
+				cp response${LMAXS}.txt ./csd/response.txt
 			fi
 		else
 			echo "csd already inputted. skipping csd generation"
@@ -318,7 +318,7 @@ if [ -f output.mat ]; then
 	mv track.tck ./track/
 	mv track_info.txt ./track/
 	mv output.mat ./wmc/classification.mat
-	mv output_fibercounts.txt ./wmc/classification
+	mv output_fibercounts.txt ./wmc/
 	mv tracts ./wmc/
 else
 	echo "tracking failed"
