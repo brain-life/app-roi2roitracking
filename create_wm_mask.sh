@@ -3,10 +3,10 @@
 ## Create white matter mask and move rois to diffusion space for tracking
 
 #exit if any command fails
-#set -e 
+set -e 
 #
 ##show commands runnings
-#set -x
+set -x
 
 dwi=`jq -r '.dwi' config.json`
 dtiinit=`jq -r '.dtiinit' config.json`

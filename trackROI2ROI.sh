@@ -50,6 +50,7 @@ lmax14=`jq -r '.lmax14' config.json`
 single_lmax=`jq -r '.single_lmax' config.json`
 multiple_seed=`jq -r '.multiple_seed' config.json`
 white_matter=`jq -r '.white_matter' config.json`
+flip_lr=`jq -r '.flip_lr' config.json`
 WMMK=wm_mask.mif
 
 mkdir -p csd
@@ -75,6 +76,15 @@ bvecs_y=($bvecs_y)
 bvecs_z=($bvecs_z)
 #output grad.b
 i=0
+
+if [[ ${flip_lr} == 'true' ]];then
+	for bval in $bvals; do
+		bvecs_x[$i]=`awk "BEGIN {print ${bvecs_x[$i]} * -1}"`
+		i=$((i+1))
+	done
+	i=0
+fi
+
 true > grad.b
 for bval in $bvals; do
     echo ${bvecs_x[$i]} ${bvecs_y[$i]} ${bvecs_z[$i]} $bval >> grad.b
