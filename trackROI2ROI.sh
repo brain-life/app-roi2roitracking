@@ -51,6 +51,7 @@ response=`jq -r '.response' config.json`
 single_lmax=`jq -r '.single_lmax' config.json`
 multiple_seed=`jq -r '.multiple_seed' config.json`
 white_matter=`jq -r '.white_matter' config.json`
+flip_lr=`jq -r '.flip_lr' config.json`
 WMMK=wm_mask.mif
 
 mkdir -p csd
