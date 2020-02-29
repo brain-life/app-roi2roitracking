@@ -4,14 +4,29 @@
 #PBS -V
 
 set -e
+set -x
 
+#TODO - if user specify their own wm_mask, I don't think we need to run this?
 if [ ! -f aparc+aseg.nii.gz ]; then
     [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
     echo $FREESURFER_LICENSE > license.txt
     time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.2 ./create_wm_mask.sh
 fi
 
-#echo "tracking"
+echo "converting dwi with fsl grad to mrtrix .mif and bgrad"
+dtiinit=`jq -r '.dtiinit' config.json`
+if [[ ${dtiinit} == "null" ]]; then
+	DIFF=`jq -r '.dwi' config.json`
+	BVALS=`jq -r '.bvals' config.json`
+	BVECS=`jq -r '.bvecs' config.json`
+else
+	DIFF=$dtiinit/*dwi_aligned*.nii.gz
+	BVALS=$dtiinit/*.bvals
+	BVECS=$dtiinit/*.bvecs
+fi
+time singularity exec -e docker://brainlife/mrtrix3:3.0_RC3 mrconvert -fslgrad $BVECS $BVALS $DIFF dwi.mif --export_grad_mrtrix grad.b -force
+
+echo "tracking"
 time singularity exec -e docker://brainlife/mrtrix_on_mcr:1.0 ./trackROI2ROI.sh
 
 echo "generating surfaces/"

@@ -24,9 +24,7 @@ set -x
 export PATH=$PATH:/usr/lib/mrtrix/bin
 
 BGRAD="grad.b"
-input_nii_gz=`jq -r '.dwi' config.json`
-BVALS=`jq -r '.bvals' config.json`
-BVECS=`jq -r '.bvecs' config.json`
+#input_nii_gz=`jq -r '.dwi' config.json`
 brainmask=`jq -r '.brainmask' config.json`
 dtiinit=`jq -r '.dtiinit' config.json`
 fsurfer=`jq -r '.freesurfer' config.json`
@@ -60,50 +58,19 @@ mkdir -p wmc
 
 # if dtiinit is inputted, set appropriate field
 if [[ ! ${dtiinit} == "null" ]]; then
-	input_nii_gz=$dtiinit/*dwi_aligned*.nii.gz
-	BVALS=$dtiinit/*.bvals
-	BVECS=$dtiinit/*.bvecs
 	brainmask=$dtiinit/dti/bin/brainMask.nii.gz
 	mrconvert ${brainmask} mask.mif
 fi
 
-#generate grad.b from bvecs/bvals
-#load bvals/bvecs
-bvals=$(cat $BVALS)
-bvecs_x=$(cat $BVECS | head -1)
-bvecs_y=$(cat $BVECS | head -2 | tail -1)
-bvecs_z=$(cat $BVECS | tail -1)
-#convert strings to array of numbers
-bvecs_x=($bvecs_x)
-bvecs_y=($bvecs_y)
-bvecs_z=($bvecs_z)
-#output grad.b
-i=0
-
-if [[ ${flip_lr} == 'true' ]] ;then
-	for bval in $bvals; do
-		bvecs_x[$i]=`awk "BEGIN {print ${bvecs_x[$i]} * -1}"`;
-		i=$((i+1))
-	done
-	i=0
-fi
-
-true > grad.b
-for bval in $bvals; do
-    echo ${bvecs_x[$i]} ${bvecs_y[$i]} ${bvecs_z[$i]} $bval >> grad.b
-    i=$((i+1))
-done
-
 #if max_lmax is empty, auto calculate
-
 if [[ $MAXLMAX == "null" || -z $MAXLMAX ]]; then
     echo "max_lmax is empty... determining which lmax to use from .bvals"
     MAXLMAX=`./calculatelmax.py`
 fi
 
-if [ ! -f dwi.mif ]; then
-    mrconvert $input_nii_gz dwi.mif
-fi
+#if [ ! -f dwi.mif ]; then
+#    mrconvert $input_nii_gz dwi.mif
+#fi
 
 if [ ! -f $WMMK ] && [[ ${white_matter} == 'null' ]]; then
 	mrconvert wm_anat.nii.gz $WMMK
