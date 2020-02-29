@@ -1,19 +1,29 @@
 #!/bin/bash
-#PBS -l nodes=1:ppn=8,vmem=16g,walltime=18:00:00
+#PBS -l nodes=1:ppn=8,vmem=16g,walltime=36:00:00
 #PBS -N roi2roitrack
 #PBS -V
 
 set -e
 
-if [ ! -f wm_anat.nii.gz ]; then
+if [ ! -f aparc+aseg.nii.gz ]; then
     [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
     echo $FREESURFER_LICENSE > license.txt
     time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.2 ./create_wm_mask.sh
 fi
 
-echo "tracking"
+#echo "tracking"
 time singularity exec -e docker://brainlife/mrtrix_on_mcr:1.0 ./trackROI2ROI.sh
 
 echo "generating surfaces/"
 time singularity exec -e docker://brainlife/pythonvtk:1.1 ./freesurfer2vtks.py aparc+aseg.nii.gz
 
+mv surfaces ./wmc/
+rm -rf aparc+aseg.nii.gz
+
+if [ ! -f ./wmc/classification.mat ]; then
+	echo "failed"
+	exit 1
+else
+	echo "complete"
+	exit 0
+fi

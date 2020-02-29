@@ -9,13 +9,14 @@ if ~isdeployed
     addpath(genpath('/N/u/brlife/git/jsonlab'))
     addpath(genpath('/N/u/brlife/git/spm'))
     addpath(genpath('/N/u/brlife/git/wma'))
-
+    addpath(genpath('/N/u/brlife/git/wma_tools'))
     %for old VM
     addpath(genpath('/usr/local/vistasoft'))
     addpath(genpath('/usr/local/encode'))
     addpath(genpath('/usr/local/jsonlab'))
     addpath(genpath('/usr/local/spm'))
     addpath(genpath('/usr/local/wma'))
+    addpath(genpath('/usr/local/wma_tools'))
 end
 
 % Set top directory
@@ -50,7 +51,7 @@ end
 
 % Create fg_classified structure
 wbFG = mergedFG;
-fg_classified = bsc_makeFGsFromClassification(classification,wbFG);
+fg_classified = bsc_makeFGsFromClassification_v4(classification,wbFG);
 
 % Save output
 save('output.mat','classification','fg_classified','-v7.3');
@@ -64,15 +65,15 @@ mkdir('tracts');
 %cm = parula(length(tracts));
 cm = distinguishable_colors(length(tracts));
 for it = 1:length(tracts)
-   tract.name   = strrep(tracts(it).name, '_', ' ');
-   all_tracts(it).name = strrep(tracts(it).name, '_', ' ');
+   tract.name   = strrep(tracts{it}.name, '_', ' ');
+   all_tracts(it).name = strrep(tracts{it}.name, '_', ' ');
    all_tracts(it).color = cm(it,:);
    tract.color  = cm(it,:);
 
    %tract.coords = tracts(it).fibers;
    %pick randomly up to 1000 fibers (pick all if there are less than 1000)
-   fiber_count = min(1000, numel(tracts(it).fibers));
-   tract.coords = tracts(it).fibers(randperm(fiber_count)); 
+   fiber_count = min(1000, numel(tracts{it}.fibers));
+   tract.coords = tracts{it}.fibers(randperm(fiber_count)); 
    
    savejson('', tract, fullfile('tracts',sprintf('%i.json',it)));
    all_tracts(it).filename = sprintf('%i.json',it);
@@ -83,13 +84,13 @@ end
 savejson('', all_tracts, fullfile('tracts/tracts.json'));
 
 % Create and write output_fibercounts.txt file
-for i = 1 : length(fg_classified)
-    name = fg_classified(i).name;
-    num_fibers = length(fg_classified(i).fibers);
+for ii = 1 : length(fg_classified)
+    name = fg_classified{ii}.name;
+    num_fibers = length(fg_classified{ii}.fibers);
     
-    fibercounts(i) = num_fibers;
-    tract_info{i,1} = name;
-    tract_info{i,2} = num_fibers;
+    fibercounts(ii) = num_fibers;
+    tract_info{ii,1} = name;
+    tract_info{ii,2} = num_fibers;
 end
 
 T = cell2table(tract_info);
