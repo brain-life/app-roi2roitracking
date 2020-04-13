@@ -29,8 +29,8 @@ You can submit this App online at [https://doi.org/10.25663/bl.app.34](https://d
 
 ```json
 {
-        "parcellation": "./input/parc/",
-        "dtiinit": "./input/dtiinit/",
+        "rois": "./input/rois/",
+        "dwi": "./input/dwi/",
         "fsurfer": "./input/freesurfer/",
         "roiPair": "45,54",      
         "num_fibers": 500000,
@@ -50,9 +50,9 @@ You can download sample datasets from Brainlife using [Brainlife CLI](https://gi
 npm install -g brainlife
 bl login
 mkdir input
-bl dataset download 5b96bc8b059cf900271924f4 && mv 5b96bc8b059cf900271924f4 input/parcellation
-bl dataset download 5b96bc8d059cf900271924f5 && mv 5b96bc8d059cf900271924f5 input/dtiinit
-bl dataset download 5b96bc8d059cf900271924f5 && mv 5b96bc8d059cf900271924f5 input/freesurfer
+bl dataset download 5e94beda5092196c60f0c7c9 && mv 5e94beda5092196c60f0c7c9 input/rois
+bl dataset download 5d9ca5863785500776c76e2b && mv 5d9ca5863785500776c76e2b input/freesurfer
+bl dataset download 5e84db45952fef75ac7a246d && mv 5e84db45952fef75ac7a246d input/dwi
 
 ```
 
