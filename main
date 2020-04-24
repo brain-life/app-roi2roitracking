@@ -20,9 +20,9 @@ if [[ ${dtiinit} == "null" ]]; then
 	BVALS=`jq -r '.bvals' config.json`
 	BVECS=`jq -r '.bvecs' config.json`
 else
-	DIFF=$dtiinit/*dwi_aligned*.nii.gz
-	BVALS=$dtiinit/*.bvals
-	BVECS=$dtiinit/*.bvecs
+	BVALS=$dtiinit/dwi_aligned*.bvals
+	BVECS=$dtiinit/dwi_aligned*.bvecs
+	DIFF=$dtiinit/dwi_aligned*.nii.gz
 fi
 time singularity exec -e docker://brainlife/mrtrix3:3.0_RC3 mrconvert -fslgrad $BVECS $BVALS $DIFF dwi.mif --export_grad_mrtrix grad.b -force
 
