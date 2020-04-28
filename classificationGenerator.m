@@ -3,10 +3,7 @@ function [] = classificationGenerator()
 if ~isdeployed
     disp('loading path')
     addpath(genpath('/N/u/hayashis/git/vistasoft'))
-    addpath(genpath('/N/u/brlife/git/encode'))
     addpath(genpath('/N/u/brlife/git/jsonlab'))
-    addpath(genpath('/N/u/brlife/git/spm'))
-    addpath(genpath('/N/u/brlife/git/wma'))
     addpath(genpath('/N/u/brlife/git/wma_tools'))
 end
 
@@ -30,6 +27,7 @@ for ii = 1:length(roiPair)/2
     classification.names{ii} = strcat('ROI_',roiPair{(2*ii) - 1},'_ROI_',roiPair{(2*ii)});
 end
 disp(classification)
+save('wmc/classification.mat','classification')
 
 % Create fg_classified structure
 fg_classified = bsc_makeFGsFromClassification_v4(classification,mergedFG);
@@ -40,9 +38,6 @@ end
 if ~exist('wmc/tracts', 'dir')
     mkdir('wmc/tracts')
 end
-
-% Save output
-save('wmc/classification.mat','classification','fg_classified','-v7.3');
 
 % Create structure to generate colors for each tract
 tracts = fg2Array(fg_classified);
@@ -83,7 +78,6 @@ T = cell2table(tract_info);
 T.Properties.VariableNames = {'Tracts', 'FiberCount'};
 
 writetable(T, 'output_fibercounts.txt');
-
 
 exit;
 end

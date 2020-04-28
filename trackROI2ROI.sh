@@ -58,7 +58,7 @@ set -e
 # if dtiinit is inputted, set appropriate field
 if [[ ! ${dtiinit} == "null" ]]; then
     brainmask=$dtiinit/dti/bin/brainMask.nii.gz
-    mrconvert ${brainmask} mask.mif
+    [ ! -f mask.mif ] && mrconvert ${brainmask} mask.mif
 fi
 
 #if max_lmax is empty, auto calculate

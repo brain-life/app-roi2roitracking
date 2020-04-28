@@ -4,10 +4,9 @@ mkdir -p compiled
 
 cat > build.m <<END
 addpath(genpath('/N/u/hayashis/git/vistasoft'))
-addpath(genpath('/N/u/brlife/git/encode'))
+%addpath(genpath('/N/u/brlife/git/encode'))
 addpath(genpath('/N/u/brlife/git/jsonlab'))
-addpath(genpath('/N/u/brlife/git/spm'))
-%addpath(genpath('/N/u/brlife/git/wma'))
+%addpath(genpath('/N/u/brlife/git/spm'))
 addpath(genpath('/N/u/brlife/git/wma_tools'))
 mcc -m -R -nodisplay -d compiled classificationGenerator
 exit
