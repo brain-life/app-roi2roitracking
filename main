@@ -26,6 +26,7 @@ else
 fi
 
 if [ ! -f dwi.mif ]; then
+    rm -f grad.b
     singularity exec -e docker://brainlife/mrtrix3:3.0_RC3 mrconvert -fslgrad $BVECS $BVALS $DIFF dwi.mif --export_grad_mrtrix grad.b
 fi
 
