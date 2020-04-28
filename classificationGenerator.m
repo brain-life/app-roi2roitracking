@@ -12,32 +12,24 @@ end
 
 % Load configuration file
 config = loadjson('config.json')
+roiPair = strtrim(config.roiPair)
 
 % Set tck file path/s
-rois=dir('*.tck');
-
-roiPair = config.roiPair;
-    
-for ii = 1:length(rois); 
-    fgPath{ii} = rois(ii).name;
+disp('merging tcks')
+tcks=dir('*.tck')
+for ii = 1:length(tcks); 
+    fgPath{ii} = tcks(ii).name;
 end
-
-% Create classification structure
-[mergedFG, classification]=bsc_mergeFGandClass(fgPath)
+disp(fgPath)
+[mergedFG, classification]=bsc_mergeFGandClass(fgPath);
+fgWrite(mergedFG, 'track/track.tck', 'tck');
 
 % Amend name of tract in classification structure
-if isnumeric(roiPair(1))
-    for ii = round((1:length(roiPair))/2)
-        classification.names{ii} = strcat('ROI_',num2str(roiPair((2*ii) - 1)),'_ROI_',num2str(roiPair((2*ii))));
-    end
-else
-    roiPair = split(roiPair);
-    for ii = round((1:length(roiPair))/2)
-        classification.names{ii} = strcat('ROI_',roiPair{(2*ii) - 1},'_ROI_',roiPair{(2*ii)});
-    end
+roiPair = split(roiPair);
+for ii = 1:length(roiPair)/2
+    classification.names{ii} = strcat('ROI_',roiPair{(2*ii) - 1},'_ROI_',roiPair{(2*ii)});
 end
-
-fgWrite(mergedFG, 'track/track.tck', 'tck')
+disp(classification)
 
 % Create fg_classified structure
 fg_classified = bsc_makeFGsFromClassification_v4(classification,mergedFG);
