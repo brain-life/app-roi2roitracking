@@ -16,7 +16,7 @@ roiPair = strtrim(config.roiPair)
 
 % Set tck file path/s
 disp('merging tcks')
-tcks=dir('*.tck')
+tcks=dir('track*.tck')
 for ii = 1:length(tcks); 
     fgPath{ii} = tcks(ii).name;
 end

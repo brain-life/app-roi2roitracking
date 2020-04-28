@@ -222,24 +222,26 @@ pairs=($roipair)
 range=` expr ${#pairs[@]}`
 nTracts=` expr ${range} / 2`
 
-for (( i=0; i<=$nTracts; i+=2 )); do
-    echo "creating seed for tract $((i/2))"
-    roi1=roi_${pairs[$((i))]}.mif
-    roi2=roi_${pairs[$((i+1))]}.mif
+for (( i=0; i<$nTracts; i+=1 )); do
+    [ -f track$((i+1)).tck ] && continue
+    
+    echo "creating seed for tract $((i+1))"
+    roi1=roi_${pairs[$((i*2))]}.mif
+    roi2=roi_${pairs[$((i*2+1))]}.mif
     if [[ ${multiple_seed} == true ]]; then
         #combine 2 rois into a single seed
-        seed=seed_${pairs[$((i))]}_${pairs[$((i+1))]}.mif
+        seed=seed_${pairs[$((i*2))]}_${pairs[$((i*2+1))]}.mif
         [ ! -f $seed ] && mradd $roi1 $roi2 $seed
     else
         #pick the first one for seed
-        seed=roi_${pairs[$((i))]}.mif
+        seed=roi_${pairs[$((i*2))]}.mif
     fi
 
     for LMAXS in ${lmaxs}; do
         for i_track in $(seq $NUM_REPETITIONS); do
              for curv in ${CURVATURE}; do
-                 echo "tract $((i/2+1)) of $((nTracts/2)) / LMAXS:$LMAXS / repetition:$i_track / curv:$curv ------------------------"
-                 out=tract$((i/2+1))_lmax${LMAXS}_crv${curv}_${i_track}.tck
+                 echo "tract $((i+1)) ($roi1 $roi2) of $nTracts / LMAXS:$LMAXS / repetition:$i_track / curv:$curv ------------------------"
+                 out=tract$((i+1))_lmax${LMAXS}_crv${curv}_${i_track}.tck
                  streamtrack -quiet SD_PROB csd${LMAXS}.mif tmp.tck \
                     -mask $WMMK \
                     -grad $BGRAD \
@@ -259,12 +261,12 @@ for (( i=0; i<=$nTracts; i+=2 )); do
     done
 
     ## concatenate tracts
-    holder=(*tract$((i/2+1))*.tck)
-    cat_tracks track$((i/2+1)).tck ${holder[*]}
+    holder=(tract$((i+1))*.tck)
+    cat_tracks track$((i+1)).tck ${holder[*]}
     rm -rf ${holder[*]}
     
     ## tract info
-    track_info track$((i/2+1)).tck > track_info$((i/2+1)).txt
+    track_info track$((i+1)).tck > track_info$((i+1)).txt
 done
 
 echo "done with tracking"
