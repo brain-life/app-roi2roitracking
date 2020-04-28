@@ -10,7 +10,7 @@ set -x
 if [ ! -f aparc+aseg.nii.gz ]; then
     [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
     echo $FREESURFER_LICENSE > license.txt
-    time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer_on_mcr:6.0.2 ./create_wm_mask.sh
+    singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer-mini:6.0.1 ./create_wm_mask.sh
 fi
 
 echo "converting dwi with fsl grad to mrtrix .mif and bgrad"
@@ -24,21 +24,24 @@ else
 	BVECS=$dtiinit/dwi_aligned*.bvecs
 	DIFF=$dtiinit/dwi_aligned*.nii.gz
 fi
-time singularity exec -e docker://brainlife/mrtrix3:3.0_RC3 mrconvert -fslgrad $BVECS $BVALS $DIFF dwi.mif --export_grad_mrtrix grad.b -force
+
+if [ ! -f dwi.mif ]; then
+    singularity exec -e docker://brainlife/mrtrix3:3.0_RC3 mrconvert -fslgrad $BVECS $BVALS $DIFF dwi.mif --export_grad_mrtrix grad.b
+fi
 
 echo "tracking"
-time singularity exec -e docker://brainlife/mrtrix_on_mcr:1.0 ./trackROI2ROI.sh
+time singularity exec -e docker://brainlife/mrtrix:0.2.13 ./trackROI2ROI.sh
+
+echo "generating wmc"
+time singularity exec -e docker://brainlife/mcr:r2019a ./compiled/classificationGenerator
+if [ ! -f ./wmc/classification.mat ]; then
+	echo "failed to create wmc/classification.mat"
+	exit 1
+fi
+#mv tracts ./wmc/
 
 echo "generating surfaces/"
 time singularity exec -e docker://brainlife/pythonvtk:1.1 ./freesurfer2vtks.py aparc+aseg.nii.gz
+#mv surfaces ./wmc/
 
-mv surfaces ./wmc/
-rm -rf aparc+aseg.nii.gz
-
-if [ ! -f ./wmc/classification.mat ]; then
-	echo "failed"
-	exit 1
-else
-	echo "complete"
-	exit 0
-fi
+echo "all done"

@@ -2,40 +2,29 @@ function [] = classificationGenerator()
 
 if ~isdeployed
     disp('loading path')
-
-    %for IU HPC
-    addpath(genpath('/N/u/brlife/git/vistasoft'))
+    addpath(genpath('/N/u/hayashis/git/vistasoft'))
     addpath(genpath('/N/u/brlife/git/encode'))
     addpath(genpath('/N/u/brlife/git/jsonlab'))
     addpath(genpath('/N/u/brlife/git/spm'))
     addpath(genpath('/N/u/brlife/git/wma'))
     addpath(genpath('/N/u/brlife/git/wma_tools'))
-    %for old VM
-    addpath(genpath('/usr/local/vistasoft'))
-    addpath(genpath('/usr/local/encode'))
-    addpath(genpath('/usr/local/jsonlab'))
-    addpath(genpath('/usr/local/spm'))
-    addpath(genpath('/usr/local/wma'))
-    addpath(genpath('/usr/local/wma_tools'))
 end
 
-% Set top directory
-topdir = pwd;
-
 % Load configuration file
-config = loadjson('config.json');
+config = loadjson('config.json')
 
 % Set tck file path/s
-rois=dir('*.tck*');
+rois=dir('*.tck');
 
 roiPair = config.roiPair;
     
 for ii = 1:length(rois); 
-    fgPath{ii} = fullfile(topdir,rois(ii).name);
+    fgPath{ii} = rois(ii).name;
 end
 
 % Create classification structure
-[mergedFG, classification]=bsc_mergeFGandClass(fgPath);
+fgPath
+[mergedFG, classification]=bsc_mergeFGandClass(fgPath)
 
 % Amend name of tract in classification structure
 if isnumeric(roiPair(1))
@@ -54,12 +43,17 @@ wbFG = mergedFG;
 fg_classified = bsc_makeFGsFromClassification_v4(classification,wbFG);
 
 % Save output
-save('output.mat','classification','fg_classified','-v7.3');
+save('wmc/classification.mat','classification','fg_classified','-v7.3');
 
 % Create structure to generate colors for each tract
 tracts = fg2Array(fg_classified);
 
-mkdir('tracts');
+if ~exist('wmc', 'dir')
+    mkdir('wmc')
+end
+if ~exist('wmc/tracts', 'dir')
+    mkdir('wmc/tracts')
+end
 
 % Make colors for the tracts
 %cm = parula(length(tracts));
@@ -75,13 +69,13 @@ for it = 1:length(tracts)
    fiber_count = min(1000, numel(tracts{it}.fibers));
    tract.coords = tracts{it}.fibers(randperm(fiber_count)); 
    
-   savejson('', tract, fullfile('tracts',sprintf('%i.json',it)));
+   savejson('', tract, fullfile('wmc','tracts', sprintf('%i.json',it)));
    all_tracts(it).filename = sprintf('%i.json',it);
    clear tract
 end
 
 % Save json outputs
-savejson('', all_tracts, fullfile('tracts/tracts.json'));
+savejson('', all_tracts, fullfile('wmc/tracts/tracts.json'));
 
 % Create and write output_fibercounts.txt file
 for ii = 1 : length(fg_classified)
