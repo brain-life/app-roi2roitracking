@@ -21,17 +21,6 @@ disp(fgPath)
 [mergedFG, classification]=bsc_mergeFGandClass(fgPath);
 fgWrite(mergedFG, 'track/track.tck', 'tck');
 
-% Amend name of tract in classification structure
-roiPair = split(roiPair);
-for ii = 1:length(roiPair)/2
-    classification.names{ii} = strcat('ROI_',roiPair{(2*ii) - 1},'_ROI_',roiPair{(2*ii)});
-end
-disp(classification)
-save('wmc/classification.mat','classification')
-
-% Create fg_classified structure
-fg_classified = bsc_makeFGsFromClassification_v4(classification,mergedFG);
-
 if ~exist('wmc', 'dir')
     mkdir('wmc')
 end
@@ -39,10 +28,16 @@ if ~exist('wmc/tracts', 'dir')
     mkdir('wmc/tracts')
 end
 
-% Create structure to generate colors for each tract
-tracts = fg2Array(fg_classified);
+% Amend name of tract in classification structure
+roiPair = split(roiPair);
+for ii = 1:length(roiPair)/2
+    classification.names{ii} = strcat('ROI_',roiPair{(2*ii) - 1},'_ROI_',roiPair{(2*ii)});
+end
+save('wmc/classification.mat','classification')
 
-% Make colors for the tracts
+% split up fg again to create tracts.json
+fg_classified = bsc_makeFGsFromClassification_v4(classification,mergedFG);
+tracts = fg2Array(fg_classified);
 %cm = parula(length(tracts));
 cm = distinguishable_colors(length(tracts));
 for it = 1:length(tracts)
