@@ -260,11 +260,11 @@ for (( i=0; i<=$nTracts; i+=2 )); do
 
     ## concatenate tracts
     holder=(*tract$((i/2+1))*.tck)
-    cat_tracks track/track$((i/2+1)).tck ${holder[*]}
+    cat_tracks track$((i/2+1)).tck ${holder[*]}
     rm -rf ${holder[*]}
     
     ## tract info
-    track_info track/track$((i/2+1)).tck > track/track_info$((i/2+1)).txt
+    track_info track$((i/2+1)).tck > track_info$((i/2+1)).txt
 done
 
 echo "done with tracking"

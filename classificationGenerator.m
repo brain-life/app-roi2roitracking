@@ -23,7 +23,6 @@ for ii = 1:length(rois);
 end
 
 % Create classification structure
-fgPath
 [mergedFG, classification]=bsc_mergeFGandClass(fgPath)
 
 % Amend name of tract in classification structure
@@ -38,15 +37,10 @@ else
     end
 end
 
+fgWrite(mergedFG, 'track/track.tck', 'tck')
+
 % Create fg_classified structure
-wbFG = mergedFG;
-fg_classified = bsc_makeFGsFromClassification_v4(classification,wbFG);
-
-% Save output
-save('wmc/classification.mat','classification','fg_classified','-v7.3');
-
-% Create structure to generate colors for each tract
-tracts = fg2Array(fg_classified);
+fg_classified = bsc_makeFGsFromClassification_v4(classification,mergedFG);
 
 if ~exist('wmc', 'dir')
     mkdir('wmc')
@@ -54,6 +48,12 @@ end
 if ~exist('wmc/tracts', 'dir')
     mkdir('wmc/tracts')
 end
+
+% Save output
+save('wmc/classification.mat','classification','fg_classified','-v7.3');
+
+% Create structure to generate colors for each tract
+tracts = fg2Array(fg_classified);
 
 % Make colors for the tracts
 %cm = parula(length(tracts));
