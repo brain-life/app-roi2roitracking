@@ -260,8 +260,8 @@ for (( i=0; i<$nTracts; i+=1 )); do
         done
     done
 
-    ## concatenate tracts
-    output=tract$((i+1)).tck
+    ## concatenate tracts into a single track
+    output=track$((i+1)).tck
     tcks=(tract$((i+1))*.tck)
     if [ ${#tcks[@]} == 1 ]; then
         #if there is only 1, we can't use cat_tracks.
