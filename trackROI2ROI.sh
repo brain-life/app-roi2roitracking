@@ -261,9 +261,15 @@ for (( i=0; i<$nTracts; i+=1 )); do
     done
 
     ## concatenate tracts
-    holder=(tract$((i+1))*.tck)
-    cat_tracks track$((i+1)).tck ${holder[*]}
-    rm -rf ${holder[*]}
+    output=tract$((i+1)).tck
+    tcks=(tract$((i+1))*.tck)
+    if [ ${#tcks[@]} == 1 ]; then
+        #if there is only 1, we can't use cat_tracks.
+        mv ${tcks[0]} $output
+    else 
+        cat_tracks $output ${tcks[*]}
+        rm -rf ${tcks[*]}
+    fi
     
     ## tract info
     track_info track$((i+1)).tck > track_info$((i+1)).txt
