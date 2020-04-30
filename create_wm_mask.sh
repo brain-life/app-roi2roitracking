@@ -18,7 +18,7 @@ else
 	export input_nii_gz=${dwi}
 fi
 
-export SUBJECTS_DIR=`pwd`
+#export SUBJECTS_DIR=`pwd`
 
 mri_label2vol --seg $fsurfer/mri/aparc+aseg.mgz \
     --temp $input_nii_gz \

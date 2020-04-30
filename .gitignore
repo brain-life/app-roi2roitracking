@@ -8,3 +8,5 @@ grad.b
 ./wmc/
 *.tck
 *track*.txt
+
+resliced_rois

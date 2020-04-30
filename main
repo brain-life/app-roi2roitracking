@@ -6,10 +6,11 @@
 set -e
 set -x
 
-#TODO - if user specify their own wm_mask, I don't think we need to run this?
+[ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
+echo $FREESURFER_LICENSE > license.txt
+
+#TODO - if user specify their own wm_mask, skip this
 if [ ! -f aparc+aseg.nii.gz ]; then
-    [ -z "$FREESURFER_LICENSE" ] && echo "Please set FREESURFER_LICENSE in .bashrc" && exit 1;
-    echo $FREESURFER_LICENSE > license.txt
     singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer-mini:6.0.1 ./create_wm_mask.sh
 fi
 
@@ -29,6 +30,9 @@ if [ ! -f dwi.mif ]; then
     rm -f grad.b
     singularity exec -e docker://brainlife/mrtrix3:3.0_RC3 mrconvert -fslgrad $BVECS $BVALS $DIFF dwi.mif --export_grad_mrtrix grad.b
 fi
+
+echo "reslicing rois"
+time singularity exec -e -B `pwd`/license.txt:/usr/local/freesurfer/license.txt docker://brainlife/freesurfer-mini:6.0.1 ./resliceROI.sh $DIFF
 
 echo "tracking"
 time singularity exec -e docker://brainlife/mrtrix:0.2.13 ./trackROI2ROI.sh

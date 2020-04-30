@@ -35,6 +35,7 @@ MINLENGTH=`jq -r '.minlength' config.json`
 MAXLENGTH=`jq -r '.maxlength' config.json`
 NUM_REPETITIONS=`jq -r '.num_repetitions' config.json`
 CURVATURE=`jq -r '.curv' config.json`
+CUTOFF=`jq -r '.cutoff' config.json`
 MAXLMAX=`jq -r '.max_lmax' config.json`
 lmax2=`jq -r '.lmax2' config.json`
 lmax4=`jq -r '.lmax4' config.json`
@@ -46,6 +47,7 @@ lmax14=`jq -r '.lmax14' config.json`
 response=`jq -r '.response' config.json`
 single_lmax=`jq -r '.single_lmax' config.json`
 multiple_seed=`jq -r '.multiple_seed' config.json`
+reslice=`jq -r '.reslice' config.json`
 white_matter=`jq -r '.white_matter' config.json`
 flip_lr=`jq -r '.flip_lr' config.json`
 WMMK=wm_mask.mif
@@ -54,6 +56,11 @@ mkdir -p csd track
 
 set -x
 set -e
+
+if [ "$reslice" == "true" ]; then
+    echo "using resliced_rois"
+    rois=resliced_rois
+fi
 
 # if dtiinit is inputted, set appropriate field
 if [[ ! ${dtiinit} == "null" ]]; then
@@ -66,10 +73,6 @@ if [[ $MAXLMAX == "null" || -z $MAXLMAX ]]; then
     echo "max_lmax is empty... determining which lmax to use from .bvals"
     MAXLMAX=`./calculatelmax.py`
 fi
-
-#if [ ! -f dwi.mif ]; then
-#    mrconvert $input_nii_gz dwi.mif
-#fi
 
 if [ ! -f $WMMK ]; then
     if [[ ${white_matter} == 'null' ]]; then
@@ -101,7 +104,6 @@ echo "converting $ROI to mif........"
     fi
 done
 
-########### CREATE FILES FOR TRACKING ######
 ## create a t2-mask from b0
 if [ -f mask.mif ]; then
     echo "t2-mask from b0 already exists...skipping"
@@ -248,6 +250,7 @@ for (( i=0; i<$nTracts; i+=1 )); do
                     -number $NUM \
                     -maxnum $MAXNUM \
                     -curvature $curv \
+                    -cutoff $CUTOFF \
                     -step $STEPSIZE \
                     -minlength $MINLENGTH \
                     -length $MAXLENGTH \
