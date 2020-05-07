@@ -98,7 +98,11 @@ echo "converting $ROI to mif........"
         echo "ROI is not all numbers (assume <name>.nii.gz)"
         #cp $rois/$ROI.nii.gz ./
         if [ ! -f roi_${ROI}.mif ]; then
-            mrconvert $rois/$ROI.nii.gz roi_${ROI}.mif 
+		if [ -f $rois/$ROI.nii.gz ]; then
+            		mrconvert $rois/$ROI.nii.gz roi_${ROI}.mif 
+		else
+			mrconvert $rois/ROI$ROI.nii.gz roi_${ROI}.mif
+		fi
         fi
         #mv ${ROI}.nii.gz ./roi/
     fi
