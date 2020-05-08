@@ -13,10 +13,11 @@ set -x
 DIFF=$1
 rois=`jq -r '.rois' config.json`
 
+#export SUBJECTS_DIR=`pwd`
 mkdir -p resliced_rois
 for ROI in $(ls $rois/*.nii.gz); do
     output=resliced_rois/$(basename $ROI)
     if [ ! -f $output ]; then
-        mri_vol2vol --targ $DIFF --mov $ROI --regheader --o $output
+	mri_vol2vol --targ $DIFF --mov $ROI --regheader --o $output
     fi
 done

@@ -51,6 +51,7 @@ reslice=`jq -r '.reslice' config.json`
 white_matter=`jq -r '.white_matter' config.json`
 flip_lr=`jq -r '.flip_lr' config.json`
 WMMK=wm_mask.mif
+initcutoff=`jq -r '.initcutoff' config.json`
 
 mkdir -p csd track 
 
@@ -243,14 +244,18 @@ for (( i=0; i<$nTracts; i+=1 )); do
         seed=roi_${pairs[$((i*2))]}.mif
     fi
 
+    [ ! -f total_mask.mif ] && mradd $seed $WMMK total_mask.mif 
+    [ ! -f total_mask_bin.mif ] && mrabs total_mask.mif total_mask_bin.mif
+    WMMK=total_mask_bin.mif
+
     for LMAXS in ${lmaxs}; do
         for i_track in $(seq $NUM_REPETITIONS); do
              for curv in ${CURVATURE}; do
                  echo "tract $((i+1)) ($roi1 $roi2) of $nTracts / LMAXS:$LMAXS / repetition:$i_track / curv:$curv ------------------------"
                  out=tract$((i+1))_lmax${LMAXS}_crv${curv}_${i_track}.tck
-                 streamtrack -quiet SD_PROB csd${LMAXS}.mif tmp.tck \
-                    -mask $WMMK \
+                 streamtrack SD_PROB csd${LMAXS}.mif tmp.tck \
                     -grad $BGRAD \
+		    -mask $WMMK \
                     -number $NUM \
                     -maxnum $MAXNUM \
                     -curvature $curv \
