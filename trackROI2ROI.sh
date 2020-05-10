@@ -289,7 +289,7 @@ done
 
 echo "done with tracking"
 
-if [ -f track*.tck ]; then
+if [ -f track1.tck ]; then
         mv *.mif *.b* *.nii.gz ./raw/
         holder=(track*.tck)
 	if [ ${#holder[@]} == 1 ]; then
