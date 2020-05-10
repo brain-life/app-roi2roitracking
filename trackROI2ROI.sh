@@ -291,8 +291,12 @@ echo "done with tracking"
 
 if [ -f track*.tck ]; then
         mv *.mif *.b* *.nii.gz ./raw/
-        holder=(track$((i+1))*.tck)
-        cat_tracks ./track/track.tck ${holder[*]}
+        holder=(track*.tck)
+	if [ ${#holder[@]} == 1 ]; then
+		cp -v ${holder[0]} ./track/track.tck
+	else
+		cat_tracks ./track/track.tck ${holder[*]}
+	fi
         track_info ./track/track.tck > ./track/track_info.txt
 else
         echo "tracking did not generate. please check derivatives and log files for debugging"
