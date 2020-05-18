@@ -62,7 +62,7 @@ You can submit this App online at [https://doi.org/10.25663/brainlife.app.279](h
    "max_lmax":    8,
    "cutoff":    "0.025",
    "roiPair":    "001 0002",
-    "stepsize":    "0.25",
+   "stepsize":    "0.25",
    "num_fibers":    500,
    "curv":    "45",
    "max_num":    100000,
