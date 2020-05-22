@@ -46,7 +46,7 @@ fi
 #mv tracts ./wmc/
 
 echo "generating surfaces/"
-time singularity exec -e docker://brainlife/pythonvtk:1.1 ./freesurfer2vtks.py aparc+aseg.nii.gz
+time singularity exec -e docker://brainlife/pythonvtk:1.1 ./freesurfer2vtks.py ./raw/aparc+aseg.nii.gz
 #mv surfaces ./wmc/
 
 echo "all done"
