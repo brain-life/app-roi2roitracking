@@ -53,7 +53,7 @@ flip_lr=`jq -r '.flip_lr' config.json`
 WMMK=wm_mask.mif
 initcutoff=`jq -r '.initcutoff' config.json`
 
-mkdir -p csd track 
+mkdir -p csd track raw
 
 set -x
 set -e
