@@ -16,6 +16,14 @@ This app will perform ensemble tracking between 2 or more cortical regions of in
 [![NSF-BCS-1734853](https://img.shields.io/badge/NSF_BCS-1734853-blue.svg)](https://nsf.gov/awardsearch/showAward?AWD_ID=1734853)
 [![NSF-BCS-1636893](https://img.shields.io/badge/NSF_BCS-1636893-blue.svg)](https://nsf.gov/awardsearch/showAward?AWD_ID=1636893)
 
+### Citations 
+
+Please cite the following articles when publishing papers that used data, code or other resources created by the brainlife.io community. 
+
+1. Fibre-tracking was performed using the MRtrix package (J-D Tournier, Brain Research Institute, Melbourne, Australia, http://www.brain.org.au/software/) (Tournier et al. 2012)
+2. Tournier JD, Calamante F, Gadian DG, Connelly A Direct estimation of the fiber orientation density function from diffusion-weighted MRI data using spherical deconvolution Neuroimage 2004; 23 (3): 1176-1185
+3. Tournier JD, Calamante F, Connelly A MRtrix: diffusion tractography in crossing fibre regions International Journal of Imaging Systems and Technology 2012; in press, DOI: 10.1002/ima.22005 
+
 ## Running the App 
 
 ### On Brainlife.io
