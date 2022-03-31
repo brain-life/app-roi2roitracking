@@ -1,0 +1,27 @@
+/N/u/brlife/git/vistasoft
+commit fff02a6fea0c84f2df6cb497ed406fb7866b2f72
+Author: jwinawer <jonathan.winawer@nyu.edu>
+Date:   Mon May 11 19:52:00 2020 -0400
+
+    in the case where the requested coords are the same as the full set of coords in the view structure, return without searching to save time
+/N/u/brlife/git/jsonlab
+commit 474d8c824800b5f2109c08f989085cb961acdbe3
+Merge: ae7a5d9 38b24fb
+Author: Qianqian Fang <fangqq@gmail.com>
+Date:   Wed Sep 6 13:01:57 2017 -0400
+
+    Merge pull request #41 from dasantonym/master
+    
+    added package.json to be able to intall via npm package manager
+/N/u/dnbulloc/Carbonate/gitProjects/wma_Tools_Git/wma_tools
+commit b0792d8488851bb09423abd606a3ebb45158debd
+Author: Daniel Bullock <dnbulloc@iu.edu>
+Date:   Thu Mar 31 14:54:29 2022 -0500
+
+    pwd already included in creation of outdir
+/N/u/brlife/git/encode
+commit 034825b0c304679d36c41906dfb4c9850cb64eae
+Author: francopestilli <frakkopesto@gmail.com>
+Date:   Sun Mar 1 15:25:30 2020 -0500
+
+    BUG: Fixed a size error in one of the calls. This was the result of the previous commit.
